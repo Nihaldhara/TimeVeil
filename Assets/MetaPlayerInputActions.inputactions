@@ -1,0 +1,85 @@
+{
+    "name": "MetaPlayerInputActions",
+    "maps": [
+        {
+            "name": "Player",
+            "id": "8b6d18a6-101c-4b96-a127-efde41432f5b",
+            "actions": [
+                {
+                    "name": "Place",
+                    "type": "Button",
+                    "id": "ad959a87-13de-4955-9986-3586498ce46c",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Save",
+                    "type": "Button",
+                    "id": "4ef39561-b97b-4048-b686-9cf8a6280c5f",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Load",
+                    "type": "Button",
+                    "id": "d1e70327-32dd-4f9e-864d-78491f22872a",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "49959de8-a2c5-46ee-a06f-9652f0a76f05",
+                    "path": "<OculusTouchController>{RightHand}/triggerPressed",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Place",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "5d919757-b7cc-4c22-8539-c5614aff05e9",
+                    "path": "<QuestTouchPlusController>{RightHand}/triggerPressed",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Place",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "4f1fcce4-26d8-4104-b308-b927721f84a7",
+                    "path": "<QuestTouchPlusController>/primaryButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Save",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "44dd7292-30b7-40c8-843d-e15445eb0e79",
+                    "path": "<QuestTouchPlusController>/secondaryButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Load",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": []
+}
