@@ -9,15 +9,6 @@ using UnityEngine.InputSystem;
 using UnityEngine.UIElements;
 
 /// <summary>
-/// Enumeration to identify what type of object can by spawn
-/// </summary>
-public enum ObjectToSpawn
-{
-    Object,
-    Anchor
-};
-
-/// <summary>
 /// Enumeration to identify what type of raycast use to find a hit
 /// </summary>
 public enum RaycastType
@@ -31,11 +22,6 @@ public enum RaycastType
 /// </summary>
 public class AnchorManager : MonoBehaviour
 {
-    /// <summary>
-    /// Current type of object that will spawn
-    /// </summary>
-    [SerializeField] private ObjectToSpawn m_ObjectToSpawn;
-
     /// <summary>
     /// Current type of raycast use to find a hit
     /// </summary>
@@ -78,6 +64,11 @@ public class AnchorManager : MonoBehaviour
 
     private ObjectSpawner m_ObjectSpawner;
 
+    private OVRSpatialAnchor m_PendingSpatialAnchor;
+    private GameObject m_PendingGameObject;
+
+    private List<GameObject> m_CreatedGameObjects;
+
     public static AnchorManager Instance { get; private set; }
 
     private void Awake()
@@ -100,11 +91,15 @@ public class AnchorManager : MonoBehaviour
 
         m_ObjectSpawner = ObjectSpawner.Instance;
 
+        m_PendingSpatialAnchor = null;
+        m_PendingGameObject = null;
+        m_CreatedGameObjects = new List<GameObject>();
+
         // Bind Input on Place function
         m_InputActions.Player.Place.performed += Place;
+        m_InputActions.Player.Save.performed += OnSaveButtonPressed;
+        m_InputActions.Player.Cancel.performed += OnCancelButtonPressed;
         m_InputActions.Player.Clear.performed += ClearAllSavedAnchors;
-
-        m_ObjectSpawner.LoadAnchorsByUuid(m_ObjectSpawner.LoadAnchorsUuids());
     }
 
     void Update()
@@ -125,9 +120,9 @@ public class AnchorManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Function use to place object or anchor
+    /// Function use to place anchor
     /// </summary>
-    /// <param name="callbackContext">Get the meta data of the input</param>
+    /// <param name="callbackContext">Get the metadata of the input</param>
     private void Place(InputAction.CallbackContext callbackContext)
     {
         Debug.Log("[My Debug] Trigger Pressed");
@@ -178,119 +173,94 @@ public class AnchorManager : MonoBehaviour
             hit.normal = _hit.normal;
         }
 
-        StartCoroutine(CreateSpatialAnchor(hit));
+        CreateSpatialAnchor(hit);
     }
 
     /// <summary>
-    /// Funciton use to create anchor
+    /// Function use to create anchor
     /// </summary>
     /// <param name="_hit">Get the data of the current hit point</param>
     /// <returns></returns>
-    IEnumerator CreateSpatialAnchor(RaycastHit _hit)
+    private void CreateSpatialAnchor(RaycastHit _hit)
     {
-        GameObject anchor = Instantiate(m_AnchorPrefab, _hit.point, Quaternion.LookRotation(_hit.normal));
-        OVRSpatialAnchor ovrSpatialAnchor = anchor.AddComponent<OVRSpatialAnchor>();
-
-        // Wait for the async creation
-        yield return new WaitUntil(() => ovrSpatialAnchor.Created);
-
-        Debug.Log($"[My Debug] Created anchor {ovrSpatialAnchor.Uuid}");
-
-        anchor.name = $"Anchor : {ovrSpatialAnchor.Uuid}";
-
-        OnSaveButtonPressed(ovrSpatialAnchor);
-    }
-
-    // Missing part to save and load anchor+
-
-    public async void OnSaveButtonPressed(OVRSpatialAnchor anchor)
-    {
-        var result = await anchor.SaveAnchorAsync();
-
-        if (result.Success)
+        if (m_PendingSpatialAnchor == null)
         {
-            Debug.Log($"[My Debug] Anchor {anchor.Uuid} saved successfully.");
+            GameObject anchor = Instantiate(m_AnchorPrefab, _hit.point, Quaternion.LookRotation(_hit.normal));
+            OVRSpatialAnchor ovrSpatialAnchor = anchor.AddComponent<OVRSpatialAnchor>();
+
+            // Wait for the async creation
+            new WaitUntil(() => ovrSpatialAnchor.Created);
+
+            Debug.Log($"[My Debug] Created anchor {ovrSpatialAnchor.Uuid}");
+
+            anchor.name = $"Anchor : {ovrSpatialAnchor.Uuid}";
+
+            m_PendingSpatialAnchor = ovrSpatialAnchor;
+            m_PendingGameObject = anchor;
         }
         else
         {
-            Debug.LogError($"[My Debug] Anchor {anchor.Uuid} failed to save with error {result.Status}");
-        }
-
-        if (PlayerPrefs.GetString("SavedAnchors") != null)
-        {
-            string savedAnchors = PlayerPrefs.GetString("SavedAnchors");
-            PlayerPrefs.SetString("SavedAnchors", savedAnchors + anchor.Uuid + ",");
-        }
-        else
-        {
-            PlayerPrefs.SetString("SavedAnchors", anchor.Uuid.ToString());
+            Debug.Log("[My Debug] You already have an unsaved anchor pending - save this one before creating another");
         }
     }
 
-    /*// This reusable buffer helps reduce pressure on the garbage collector
-    List<OVRSpatialAnchor.UnboundAnchor> _unboundAnchors = new();
-
-    public IEnumerable<Guid> LoadAnchorsUuids()
+    private async void OnSaveButtonPressed(InputAction.CallbackContext callbackContext)
     {
-        string rawUuids = PlayerPrefs.GetString("SavedAnchors");
-        if (string.IsNullOrEmpty(rawUuids))
-            return new List<Guid>();
+        OVRSpatialAnchor anchor = m_PendingSpatialAnchor;
 
-        string[] separatedRawUuids = rawUuids.Split(",", StringSplitOptions.RemoveEmptyEntries);
-
-        IEnumerable<Guid> anchorsUuids = new List<Guid>();
-        foreach (var rawUuid in separatedRawUuids)
+        if (anchor != null)
         {
-            Guid uuid = Guid.Parse(rawUuid);
-            anchorsUuids = anchorsUuids.Append(uuid);
-        }
+            var result = await anchor.SaveAnchorAsync();
 
-        return anchorsUuids;
-    }
-
-    public async void LoadAnchorsByUuid(IEnumerable<Guid> uuids)
-    {
-        // Step 1: Load
-        var result = await OVRSpatialAnchor.LoadUnboundAnchorsAsync(uuids, _unboundAnchors);
-
-        if (result.Success)
-        {
-            Debug.Log($"[My Debug] Anchors loaded successfully.");
-
-            // Note result.Value is the same as _unboundAnchors
-            foreach (var unboundAnchor in result.Value)
+            if (result.Success)
             {
-                // Step 2: Localize
-                unboundAnchor.LocalizeAsync().ContinueWith((success, anchor) =>
+                if (PlayerPrefs.GetString("SavedAnchors") != string.Empty)
                 {
-                    if (success)
-                    {
-                        // Create a new game object with an OVRSpatialAnchor component
-                        var spatialAnchor = new GameObject($"[My Debug] Anchor {unboundAnchor.Uuid}")
-                            .AddComponent<OVRSpatialAnchor>();
-                        GameObject gameObjectAnchor = Instantiate(m_AnchorPrefab, spatialAnchor.transform);
-
-                        // Step 3: Bind
-                        // Because the anchor has already been localized, BindTo will set the
-                        // transform component immediately.
-                        unboundAnchor.BindTo(spatialAnchor);
-                    }
-                    else
-                    {
-                        Debug.LogError($"[My Debug] Localization failed for anchor {unboundAnchor.Uuid}");
-                    }
-                }, unboundAnchor);
+                    string savedAnchors = PlayerPrefs.GetString("SavedAnchors");
+                    PlayerPrefs.SetString("SavedAnchors", savedAnchors + anchor.Uuid + ",");
+                }
+                else
+                {
+                    PlayerPrefs.SetString("SavedAnchors", anchor.Uuid + ",");
+                }
+                Debug.Log($"[My Debug] Anchor {anchor.Uuid} saved successfully.");
+                m_CreatedGameObjects.Add(anchor.gameObject);
+                m_PendingSpatialAnchor = null;
+            }
+            else
+            {
+                Debug.LogError($"[My Debug] Anchor {anchor.Uuid} failed to save with error {result.Status}");
             }
         }
         else
         {
-            Debug.LogError($"Load failed with error {result.Status}.");
+            Debug.Log("[My Debug] No anchor pending to be saved");
         }
-    }*/
+    }
+
+    private void OnCancelButtonPressed(InputAction.CallbackContext callbackContext)
+    {
+        if (m_PendingSpatialAnchor != null)
+        {
+            Destroy(m_PendingSpatialAnchor);
+            m_PendingSpatialAnchor = null;
+            Destroy(m_PendingGameObject);
+            Debug.Log("[My Debug] Cancelled anchor creation for last placed anchor");
+        }
+        else
+        {
+            Debug.Log("[My Debug] You don't have an anchor waiting to be saved");
+        }
+    }
 
     private void ClearAllSavedAnchors(InputAction.CallbackContext callbackContext)
     {
         PlayerPrefs.DeleteKey("SavedAnchors");
+        foreach (var gameObject in m_CreatedGameObjects)
+        {
+            Destroy(gameObject);
+        }
+        ObjectSpawner.ClearObjects();
         Debug.Log("[My Debug] All saved anchors cleared");
     }
 }

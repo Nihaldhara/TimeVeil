@@ -6,8 +6,8 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/Scenes/SampleScene.unity
-    guid: 99c9720ab356a0642a771bea13969a05
+    path: Assets/TimeVeil/Scenes/SC_EditAnchors.unity
+    guid: 8bf58e4739a94964598c527c4d269bf1
   m_configObjects:
     com.unity.input.settings: {fileID: 11400000, guid: efe8da2dd4b68cb478dee17b4e2d2f25, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: bdceb2eea4a68f246af5c86d85effe00, type: 3}

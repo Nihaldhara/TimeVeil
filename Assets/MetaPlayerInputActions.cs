@@ -155,7 +155,18 @@ public partial class @MetaPlayerInputActions: IInputActionCollection2, IDisposab
                 {
                     ""name"": """",
                     ""id"": ""4f1fcce4-26d8-4104-b308-b927721f84a7"",
-                    ""path"": ""<QuestTouchPlusController>/primaryButton"",
+                    ""path"": ""<OculusTouchController>{LeftHand}/triggerPressed"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Save"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""faa53bba-6915-4fa7-8b9d-08b7e901b86f"",
+                    ""path"": ""<QuestTouchPlusController>{LeftHand}/triggerPressed"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
@@ -166,7 +177,18 @@ public partial class @MetaPlayerInputActions: IInputActionCollection2, IDisposab
                 {
                     ""name"": """",
                     ""id"": ""44dd7292-30b7-40c8-843d-e15445eb0e79"",
-                    ""path"": ""<QuestTouchPlusController>/secondaryButton"",
+                    ""path"": ""<OculusTouchController>{LeftHand}/gripPressed"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Cancel"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""0338fb64-a12f-4d2a-a9e1-88abe62dcfda"",
+                    ""path"": ""<QuestTouchPlusController>{LeftHand}/gripPressed"",
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",

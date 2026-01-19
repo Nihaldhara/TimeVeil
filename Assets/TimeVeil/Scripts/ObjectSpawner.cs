@@ -9,6 +9,8 @@ public class ObjectSpawner : MonoBehaviour
     /// Reference prefab use to spawn an object on hit pose
     /// </summary>
     [SerializeField] private GameObject m_AnchorPrefab;
+
+    private static List<GameObject> m_GameObjectsPlaced;
     
     public static ObjectSpawner Instance { get; private set; }
 
@@ -26,6 +28,8 @@ public class ObjectSpawner : MonoBehaviour
     
     void Start()
     {
+        m_GameObjectsPlaced = new List<GameObject>();
+        
         Debug.Log($"[My Debug] ObjectSpawner.Start() called in scene: {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}");
         LoadAnchorsByUuid(LoadAnchorsUuids());
     }
@@ -72,16 +76,11 @@ public class ObjectSpawner : MonoBehaviour
                     {
                         var spatialAnchor = new GameObject($"[My Debug] Anchor {unboundAnchor.Uuid}")
                             .AddComponent<OVRSpatialAnchor>();
+                        m_GameObjectsPlaced.Add(spatialAnchor.gameObject);
 
                         unboundAnchor.BindTo(spatialAnchor);
-    
-                        Debug.Log($"[My Debug] Anchor position after bind: {spatialAnchor.transform.position}");
-                        Debug.Log($"[My Debug] Anchor rotation after bind: {spatialAnchor.transform.rotation}");
-                        Debug.Log($"[My Debug] m_AnchorPrefab is null: {m_AnchorPrefab == null}");
 
                         GameObject gameObjectAnchor = Instantiate(m_AnchorPrefab, spatialAnchor.transform);
-    
-                        Debug.Log($"[My Debug] Spawned object position: {gameObjectAnchor.transform.position}");
                     }
                     else
                     {
@@ -94,5 +93,14 @@ public class ObjectSpawner : MonoBehaviour
         {
             Debug.LogError($"Load failed with error {result.Status}.");
         }
+    }
+
+    public static void ClearObjects()
+    {
+        foreach (var gameObject in m_GameObjectsPlaced)
+        {
+            Destroy(gameObject);
+        }
+        m_GameObjectsPlaced.Clear();
     }
 }
