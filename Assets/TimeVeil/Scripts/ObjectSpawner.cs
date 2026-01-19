@@ -1,216 +1,57 @@
-using Meta.XR;
-using Meta.XR.MRUtilityKit;
 using System;
-using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
-using UnityEngine.InputSystem;
-using UnityEngine.UIElements;
 
-/// <summary>
-/// Enumaration to identify what type of object can by spawn
-/// </summary>
-public enum ObjectToSpawn { Object, Anchor };
-
-/// <summary>
-/// Enumaration to identify what type of raycast use to find a hit
-/// </summary>
-public enum RaycastType { LabelFilter, DepthEnv };
-
-/// <summary>
-/// Class you can use when you need to instantiate object when you it MRUK Anchor
-/// </summary>
 public class ObjectSpawner : MonoBehaviour
 {
-    /// <summary>
-    /// Current type of object that will spawn
-    /// </summary>
-    [SerializeField] private ObjectToSpawn m_ObjectToSpawn;
-
-    /// <summary>
-    /// Current type of raycast use to find a hit
-    /// </summary>
-    [SerializeField] private RaycastType m_RaycastType;
-
-    /// <summary>
-    /// Reference prefab use to spawn an object on hit pose
-    /// </summary>
-    [SerializeField] private GameObject m_ObjectPrefab;
-
     /// <summary>
     /// Reference prefab use to spawn an object on hit pose
     /// </summary>
     [SerializeField] private GameObject m_AnchorPrefab;
+    
+    public static ObjectSpawner Instance { get; private set; }
 
-    /// <summary>
-    /// Instance of the instanciate prefab when dectect hit pose
-    /// </summary>
-    private GameObject m_Object;
-
-    /// <summary>
-    /// Instance of raycast manager use for the Depth Env raycast
-    /// </summary>
-    private EnvironmentRaycastManager m_RayCastManager;
-
-    /// <summary>
-    /// Hand reference for origin of raycast
-    /// </summary>
-    [SerializeField] private Transform m_ControllerTarget;
-    /// <summary>
-    /// Visual ray for the raycast
-    /// </summary>
-    [SerializeField] private LineRenderer m_LineRenderer;
-
-    /// <summary>
-    /// Label Filter use as a layer for the raycast
-    /// </summary>
-    [SerializeField] private MRUKAnchor.SceneLabels m_LabelFilter;
-
-    /// <summary>
-    /// Instance of Input Actions of the Meta Player
-    /// </summary>
-    private MetaPlayerInputActions m_InputActions;
-
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        
+        Instance = this;
+        DontDestroyOnLoad(gameObject);
+    }
+    
     void Start()
     {
-        m_InputActions = InputActionsManager.InstanceInputActions;
-
-        m_RayCastManager = FindFirstObjectByType<EnvironmentRaycastManager>();
-
-        // Bind Input on Place function
-        m_InputActions.Player.Place.performed += Place;
-        //m_InputActions.Player.Save.performed += SaveAnchors;
-        //m_InputActions.Player.Load.performed += LoadAnchors;
-
-        //string guidString = "689c5b9e-3273-9da9-c312-06e5bc3f2913";
-        //Guid anchorGuid = Guid.Parse(guidString);
-
-        //IEnumerable<Guid> uuids = new List<Guid> { anchorGuid };
-
-        //LoadAnchorsByUuid(uuids);
-
+        Debug.Log($"[My Debug] ObjectSpawner.Start() called in scene: {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}");
+        LoadAnchorsByUuid(LoadAnchorsUuids());
     }
-
-    void Update()
-    {
-        DisplayRaycast();
-    }
-
-    /// <summary>
-    /// Function to display the current raycast
-    /// </summary>
-    private void DisplayRaycast()
-    {
-        Vector3 start = m_ControllerTarget.position;
-        Vector3 end = start + m_ControllerTarget.forward.normalized * 100;
-
-        m_LineRenderer.SetPosition(0, start);
-        m_LineRenderer.SetPosition(1, end);
-    }
-
-    /// <summary>
-    /// Function use to place object or anchor
-    /// </summary>
-    /// <param name="callbackContext">Get the meta data of the input</param>
-    private void Place(InputAction.CallbackContext callbackContext)
-    {
-        Debug.Log("[My Debug] Trigger Pressed");
-
-        MRUKAnchor trackable = null;
-
-        RaycastHit hit = new RaycastHit();
-
-        // Create the initial Ray
-        Ray ray = new Ray(m_ControllerTarget.position, m_ControllerTarget.forward);
-
-        // In case of LabelFilter use
-        if (m_RaycastType == RaycastType.LabelFilter)
-        {
-            if (!Physics.Raycast(ray, out hit))
-                return;
-
-            // Check if the ray hit MRUKAnchor
-            trackable = hit.transform.gameObject.GetComponentInParent<MRUKAnchor>();
-
-            if (trackable == null)
-            {
-                Debug.Log("[My Debug] No MRUK Object Hit");
-                return;
-            }
-
-            if (!new LabelFilter(m_LabelFilter).PassesFilter(trackable.Label))
-                return;
-
-            Debug.Log("[My Debug] MRUK Object Hit : " + trackable.Label);
-
-            Debug.Log("[My Debug] Try to create Anchor");
-
-        }
-        // In case of Depth Env use
-        else if (m_RaycastType == RaycastType.DepthEnv)
-        {
-            if (!m_RayCastManager.Raycast(ray, out EnvironmentRaycastHit _hit) || _hit.status == EnvironmentRaycastHitStatus.Hit)
-                return;
-
-            hit.point = _hit.point;
-            hit.normal = _hit.normal;
-        }
-
-        // In case of spawn object
-        if(m_ObjectToSpawn == ObjectToSpawn.Object)
-        {
-            // Check if the Hit Object is already instantiate
-            if (!m_Object)
-                m_Object = Instantiate(m_ObjectPrefab);
-
-            m_Object.transform.SetPositionAndRotation(hit.point, Quaternion.LookRotation(hit.normal));
-        }
-        // In case of spawn anchor
-        else if (m_ObjectToSpawn == ObjectToSpawn.Anchor)
-        {
-            StartCoroutine(CreateSpatialAnchor(hit));
-        }   
-    }
-
-    /// <summary>
-    /// Funciton use to create anchor
-    /// </summary>
-    /// <param name="_hit">Get the data of the current hit point</param>
-    /// <returns></returns>
-    IEnumerator CreateSpatialAnchor(RaycastHit _hit)
-    {
-        GameObject anchor = Instantiate(m_AnchorPrefab, _hit.point, Quaternion.LookRotation(_hit.normal));
-        OVRSpatialAnchor ovrSpatialAnchor = anchor.AddComponent<OVRSpatialAnchor>();
-
-        // Wait for the async creation
-        yield return new WaitUntil(() => ovrSpatialAnchor.Created);
-
-        Debug.Log($"[My Debug] Created anchor {ovrSpatialAnchor.Uuid}");
-
-        anchor.name = $"Anchor : {ovrSpatialAnchor.Uuid}";
-
-        //OnSaveButtonPressed(ovrSpatialAnchor);
-    }
-
-    // Missing part to save and load anchor+
-
-    public async void OnSaveButtonPressed(OVRSpatialAnchor anchor)
-    {
-        var result = await anchor.SaveAnchorAsync();
-        if (result.Success)
-        {
-            Debug.Log($"[My Debug] Anchor {anchor.Uuid} saved successfully.");
-        }
-        else
-        {
-            Debug.LogError($"[My Debug] Anchor {anchor.Uuid} failed to save with error {result.Status}");
-        }
-    }
-
+    
     // This reusable buffer helps reduce pressure on the garbage collector
     List<OVRSpatialAnchor.UnboundAnchor> _unboundAnchors = new();
+    
+    public IEnumerable<Guid> LoadAnchorsUuids()
+    {
+        string rawUuids = PlayerPrefs.GetString("SavedAnchors");
+        if (string.IsNullOrEmpty(rawUuids))
+            return new List<Guid>();
 
-    async void LoadAnchorsByUuid(IEnumerable<Guid> uuids)
+        string[] separatedRawUuids = rawUuids.Split(",", StringSplitOptions.RemoveEmptyEntries);
+
+        IEnumerable<Guid> anchorsUuids = new List<Guid>();
+        foreach (var rawUuid in separatedRawUuids)
+        {
+            Guid uuid = Guid.Parse(rawUuid);
+            anchorsUuids = anchorsUuids.Append(uuid);
+        }
+
+        return anchorsUuids;
+    }
+    
+    public async void LoadAnchorsByUuid(IEnumerable<Guid> uuids)
     {
         // Step 1: Load
         var result = await OVRSpatialAnchor.LoadUnboundAnchorsAsync(uuids, _unboundAnchors);
@@ -225,17 +66,22 @@ public class ObjectSpawner : MonoBehaviour
                 // Step 2: Localize
                 unboundAnchor.LocalizeAsync().ContinueWith((success, anchor) =>
                 {
+                    Debug.Log($"[My Debug] Localization callback fired for {anchor.Uuid}, success: {success}");
+                    
                     if (success)
                     {
-                        // Create a new game object with an OVRSpatialAnchor component
                         var spatialAnchor = new GameObject($"[My Debug] Anchor {unboundAnchor.Uuid}")
                             .AddComponent<OVRSpatialAnchor>();
-                        GameObject gameObjectAnchor = Instantiate(m_AnchorPrefab, spatialAnchor.transform);
 
-                        // Step 3: Bind
-                        // Because the anchor has already been localized, BindTo will set the
-                        // transform component immediately.
                         unboundAnchor.BindTo(spatialAnchor);
+    
+                        Debug.Log($"[My Debug] Anchor position after bind: {spatialAnchor.transform.position}");
+                        Debug.Log($"[My Debug] Anchor rotation after bind: {spatialAnchor.transform.rotation}");
+                        Debug.Log($"[My Debug] m_AnchorPrefab is null: {m_AnchorPrefab == null}");
+
+                        GameObject gameObjectAnchor = Instantiate(m_AnchorPrefab, spatialAnchor.transform);
+    
+                        Debug.Log($"[My Debug] Spawned object position: {gameObjectAnchor.transform.position}");
                     }
                     else
                     {

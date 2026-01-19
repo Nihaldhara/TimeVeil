@@ -13,10 +13,7 @@ public class InputActionsManager : MonoBehaviour
     /// <summary>
     /// Get Instance of the Meta Player Input Actions
     /// </summary>
-    static public MetaPlayerInputActions InstanceInputActions
-    {
-        get { return m_InstanceInputActions; }
-    }
+    static public MetaPlayerInputActions InstanceInputActions => m_InstanceInputActions;
 
     private void Awake()
     {

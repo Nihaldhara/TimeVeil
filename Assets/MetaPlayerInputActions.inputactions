@@ -1,4 +1,5 @@
 {
+    "version": 1,
     "name": "MetaPlayerInputActions",
     "maps": [
         {
@@ -24,9 +25,18 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Load",
+                    "name": "Cancel",
                     "type": "Button",
                     "id": "d1e70327-32dd-4f9e-864d-78491f22872a",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Clear",
+                    "type": "Button",
+                    "id": "99732e9c-c3e9-4d3a-a05d-1e25e3359930",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -74,7 +84,29 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Load",
+                    "action": "Cancel",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e99fc8f5-8e7f-4ae7-b4cb-9596a367aa00",
+                    "path": "<OculusTouchController>{RightHand}/gripPressed",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Clear",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "ccb3bc17-c030-4ba5-8f6e-1689563d71d1",
+                    "path": "<QuestTouchPlusController>{RightHand}/gripPressed",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Clear",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
