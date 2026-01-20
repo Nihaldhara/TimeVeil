@@ -6,7 +6,14 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
-using UnityEngine.UIElements;
+
+public enum AnchorType
+{
+    Grabbable,
+    Static,
+    Sentinel,
+    Target
+}
 
 /// <summary>
 /// Enumeration to identify what type of raycast use to find a hit
@@ -22,6 +29,8 @@ public enum RaycastType
 /// </summary>
 public class AnchorManager : MonoBehaviour
 {
+    [SerializeField] private AnchorType m_AnchorType;
+
     /// <summary>
     /// Current type of raycast use to find a hit
     /// </summary>
@@ -31,11 +40,6 @@ public class AnchorManager : MonoBehaviour
     /// Reference prefab use to spawn an object on hit pose
     /// </summary>
     [SerializeField] private GameObject m_AnchorPrefab;
-
-    /// <summary>
-    /// Instance of the instantiate prefab when detect hit pose
-    /// </summary>
-    private GameObject m_Object;
 
     /// <summary>
     /// Instance of raycast manager use for the Depth Env raycast
@@ -62,12 +66,13 @@ public class AnchorManager : MonoBehaviour
     /// </summary>
     private MetaPlayerInputActions m_InputActions;
 
-    private ObjectSpawner m_ObjectSpawner;
-
     private OVRSpatialAnchor m_PendingSpatialAnchor;
     private GameObject m_PendingGameObject;
 
-    private List<GameObject> m_CreatedGameObjects;
+    private List<GameObject> m_CreatedAnchors;
+
+    [SerializeField] private List<GameObject> m_typesList;
+    private GameObject m_SelectedType;
 
     public static AnchorManager Instance { get; private set; }
 
@@ -89,22 +94,24 @@ public class AnchorManager : MonoBehaviour
 
         m_RayCastManager = FindFirstObjectByType<EnvironmentRaycastManager>();
 
-        m_ObjectSpawner = ObjectSpawner.Instance;
-
         m_PendingSpatialAnchor = null;
         m_PendingGameObject = null;
-        m_CreatedGameObjects = new List<GameObject>();
+        m_CreatedAnchors = new List<GameObject>();
+        m_SelectedType = m_typesList[Convert.ToInt32(m_AnchorType)];
 
         // Bind Input on Place function
         m_InputActions.Player.Place.performed += Place;
         m_InputActions.Player.Save.performed += OnSaveButtonPressed;
         m_InputActions.Player.Cancel.performed += OnCancelButtonPressed;
         m_InputActions.Player.Clear.performed += ClearAllSavedAnchors;
+
+        LoadAnchorsByUuid(LoadAnchorsUuids());
     }
 
     void Update()
     {
         DisplayRaycast();
+        m_SelectedType = m_typesList[Convert.ToInt32(m_AnchorType)];
     }
 
     /// <summary>
@@ -187,6 +194,8 @@ public class AnchorManager : MonoBehaviour
         {
             GameObject anchor = Instantiate(m_AnchorPrefab, _hit.point, Quaternion.LookRotation(_hit.normal));
             OVRSpatialAnchor ovrSpatialAnchor = anchor.AddComponent<OVRSpatialAnchor>();
+            GameObject anchorObject = Instantiate(m_SelectedType, _hit.point, Quaternion.LookRotation(_hit.normal));
+            anchorObject.transform.parent = ovrSpatialAnchor.transform;
 
             // Wait for the async creation
             new WaitUntil(() => ovrSpatialAnchor.Created);
@@ -200,7 +209,8 @@ public class AnchorManager : MonoBehaviour
         }
         else
         {
-            Debug.Log("[My Debug] You already have an unsaved anchor pending - save this one before creating another");
+            Debug.Log(
+                "[My Debug] You already have an unsaved anchor pending - save the previous one before creating another");
         }
     }
 
@@ -223,8 +233,11 @@ public class AnchorManager : MonoBehaviour
                 {
                     PlayerPrefs.SetString("SavedAnchors", anchor.Uuid + ",");
                 }
+
+                PlayerPrefs.SetInt(anchor.Uuid.ToString(), Convert.ToInt32(m_AnchorType));
+
                 Debug.Log($"[My Debug] Anchor {anchor.Uuid} saved successfully.");
-                m_CreatedGameObjects.Add(anchor.gameObject);
+                m_CreatedAnchors.Add(anchor.gameObject);
                 m_PendingSpatialAnchor = null;
             }
             else
@@ -253,14 +266,79 @@ public class AnchorManager : MonoBehaviour
         }
     }
 
+    // This reusable buffer helps reduce pressure on the garbage collector
+    List<OVRSpatialAnchor.UnboundAnchor> _unboundAnchors = new();
+
+    public IEnumerable<Guid> LoadAnchorsUuids()
+    {
+        string rawUuids = PlayerPrefs.GetString("SavedAnchors");
+        if (string.IsNullOrEmpty(rawUuids))
+            return new List<Guid>();
+
+        string[] separatedRawUuids = rawUuids.Split(",", StringSplitOptions.RemoveEmptyEntries);
+
+        IEnumerable<Guid> anchorsUuids = new List<Guid>();
+        foreach (var rawUuid in separatedRawUuids)
+        {
+            Guid uuid = Guid.Parse(rawUuid);
+            anchorsUuids = anchorsUuids.Append(uuid);
+        }
+
+        return anchorsUuids;
+    }
+
+    public async void LoadAnchorsByUuid(IEnumerable<Guid> uuids)
+    {
+        // Step 1: Load
+        var result = await OVRSpatialAnchor.LoadUnboundAnchorsAsync(uuids, _unboundAnchors);
+
+        if (result.Success)
+        {
+            Debug.Log($"[My Debug] Anchors loaded successfully.");
+
+            // Note result.Value is the same as _unboundAnchors
+            foreach (var unboundAnchor in result.Value)
+            {
+                // Step 2: Localize
+                unboundAnchor.LocalizeAsync().ContinueWith((success, anchor) =>
+                {
+                    Debug.Log($"[My Debug] Localization callback fired for {anchor.Uuid}, success: {success}");
+
+                    if (success)
+                    {
+                        var anchorType = PlayerPrefs.GetInt(anchor.Uuid.ToString());
+                        GameObject anchorGameObject = m_typesList[anchorType];
+
+                        var spatialAnchor = new GameObject($"[My Debug] Anchor {unboundAnchor.Uuid}")
+                            .AddComponent<OVRSpatialAnchor>();
+                        m_CreatedAnchors.Add(spatialAnchor.gameObject);
+
+                        unboundAnchor.BindTo(spatialAnchor);
+
+                        GameObject anchorObject = Instantiate(anchorGameObject, spatialAnchor.transform);
+                        anchorObject.transform.parent = spatialAnchor.transform;
+                    }
+                    else
+                    {
+                        Debug.LogError($"[My Debug] Localization failed for anchor {unboundAnchor.Uuid}");
+                    }
+                }, unboundAnchor);
+            }
+        }
+        else
+        {
+            Debug.LogError($"Load failed with error {result.Status}.");
+        }
+    }
+
     private void ClearAllSavedAnchors(InputAction.CallbackContext callbackContext)
     {
         PlayerPrefs.DeleteKey("SavedAnchors");
-        foreach (var gameObject in m_CreatedGameObjects)
+        foreach (var gameObject in m_CreatedAnchors)
         {
             Destroy(gameObject);
         }
-        ObjectSpawner.ClearObjects();
+
         Debug.Log("[My Debug] All saved anchors cleared");
     }
 }

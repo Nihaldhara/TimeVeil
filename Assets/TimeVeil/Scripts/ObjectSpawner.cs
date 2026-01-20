@@ -10,33 +10,22 @@ public class ObjectSpawner : MonoBehaviour
     /// </summary>
     [SerializeField] private GameObject m_AnchorPrefab;
 
-    private static List<GameObject> m_GameObjectsPlaced;
-    
-    public static ObjectSpawner Instance { get; private set; }
+    [SerializeField] private List<GameObject> m_typesList;
 
-    private void Awake()
-    {
-        if (Instance != null && Instance != this)
-        {
-            Destroy(gameObject);
-            return;
-        }
-        
-        Instance = this;
-        DontDestroyOnLoad(gameObject);
-    }
-    
+    private static List<GameObject> m_GameObjectsPlaced;
+
     void Start()
     {
         m_GameObjectsPlaced = new List<GameObject>();
-        
-        Debug.Log($"[My Debug] ObjectSpawner.Start() called in scene: {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}");
+
+        Debug.Log(
+            $"[My Debug] ObjectSpawner.Start() called in scene: {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}");
         LoadAnchorsByUuid(LoadAnchorsUuids());
     }
-    
+
     // This reusable buffer helps reduce pressure on the garbage collector
     List<OVRSpatialAnchor.UnboundAnchor> _unboundAnchors = new();
-    
+
     public IEnumerable<Guid> LoadAnchorsUuids()
     {
         string rawUuids = PlayerPrefs.GetString("SavedAnchors");
@@ -54,7 +43,7 @@ public class ObjectSpawner : MonoBehaviour
 
         return anchorsUuids;
     }
-    
+
     public async void LoadAnchorsByUuid(IEnumerable<Guid> uuids)
     {
         // Step 1: Load
@@ -71,16 +60,20 @@ public class ObjectSpawner : MonoBehaviour
                 unboundAnchor.LocalizeAsync().ContinueWith((success, anchor) =>
                 {
                     Debug.Log($"[My Debug] Localization callback fired for {anchor.Uuid}, success: {success}");
-                    
+
                     if (success)
                     {
+                        var objectType = PlayerPrefs.GetInt(anchor.Uuid.ToString());
+                        GameObject gameObjectType = m_typesList[objectType];
+
                         var spatialAnchor = new GameObject($"[My Debug] Anchor {unboundAnchor.Uuid}")
                             .AddComponent<OVRSpatialAnchor>();
                         m_GameObjectsPlaced.Add(spatialAnchor.gameObject);
 
                         unboundAnchor.BindTo(spatialAnchor);
 
-                        GameObject gameObjectAnchor = Instantiate(m_AnchorPrefab, spatialAnchor.transform);
+                        GameObject anchorObject = Instantiate(gameObjectType, spatialAnchor.transform);
+                        anchorObject.transform.parent = spatialAnchor.transform;
                     }
                     else
                     {
@@ -93,14 +86,5 @@ public class ObjectSpawner : MonoBehaviour
         {
             Debug.LogError($"Load failed with error {result.Status}.");
         }
-    }
-
-    public static void ClearObjects()
-    {
-        foreach (var gameObject in m_GameObjectsPlaced)
-        {
-            Destroy(gameObject);
-        }
-        m_GameObjectsPlaced.Clear();
     }
 }
