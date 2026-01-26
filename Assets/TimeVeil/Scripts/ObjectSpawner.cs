@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public class ObjectSpawner : MonoBehaviour
@@ -12,14 +13,10 @@ public class ObjectSpawner : MonoBehaviour
 
     [SerializeField] private List<GameObject> m_typesList;
 
-    private static List<GameObject> m_GameObjectsPlaced;
-
+    [SerializeField] private PathGrid m_PathGrid;
+    
     void Start()
     {
-        m_GameObjectsPlaced = new List<GameObject>();
-
-        Debug.Log(
-            $"[My Debug] ObjectSpawner.Start() called in scene: {UnityEngine.SceneManagement.SceneManager.GetActiveScene().name}");
         LoadAnchorsByUuid(LoadAnchorsUuids());
     }
 
@@ -53,38 +50,74 @@ public class ObjectSpawner : MonoBehaviour
         {
             Debug.Log($"[My Debug] Anchors loaded successfully.");
 
-            // Note result.Value is the same as _unboundAnchors
-            foreach (var unboundAnchor in result.Value)
+            List<GameObject> targets = await LoadAnchorsWithType(result.Value, AnchorType.Target);
+            List<Vector3> targetPositions = new List<Vector3>();
+            foreach (var target in targets)
             {
-                // Step 2: Localize
-                unboundAnchor.LocalizeAsync().ContinueWith((success, anchor) =>
-                {
-                    Debug.Log($"[My Debug] Localization callback fired for {anchor.Uuid}, success: {success}");
-
-                    if (success)
-                    {
-                        var objectType = PlayerPrefs.GetInt(anchor.Uuid.ToString());
-                        GameObject gameObjectType = m_typesList[objectType];
-
-                        var spatialAnchor = new GameObject($"[My Debug] Anchor {unboundAnchor.Uuid}")
-                            .AddComponent<OVRSpatialAnchor>();
-                        m_GameObjectsPlaced.Add(spatialAnchor.gameObject);
-
-                        unboundAnchor.BindTo(spatialAnchor);
-
-                        GameObject anchorObject = Instantiate(gameObjectType, spatialAnchor.transform);
-                        anchorObject.transform.parent = spatialAnchor.transform;
-                    }
-                    else
-                    {
-                        Debug.LogError($"[My Debug] Localization failed for anchor {unboundAnchor.Uuid}");
-                    }
-                }, unboundAnchor);
+                targetPositions.Add(target.transform.position);
             }
+            List<GameObject> sentinels = await LoadAnchorsWithType(result.Value, AnchorType.Sentinel);
+            foreach (var sentinel in sentinels)
+            {
+                Pathfinding sentinelPathfinding = sentinel.GetComponent<Pathfinding>();
+                sentinelPathfinding.Grid = m_PathGrid;
+                SmartAgent sentinelSmartAgent = sentinel.GetComponent<SmartAgent>();
+                sentinelSmartAgent.TargetsList = targets;
+                SimpleAgent sentinelSimpleAgent = sentinel.GetComponent<SimpleAgent>();
+                sentinelSimpleAgent.Path = targetPositions.ToArray();
+            }
+            List<GameObject> key1 = await LoadAnchorsWithType(result.Value, AnchorType.Key1);
+            List<GameObject> puzzle1 = await LoadAnchorsWithType(result.Value, AnchorType.Puzzle1);
+            puzzle1[0].GetComponent<Puzzle>().Key = key1[0];
+            /*List<GameObject> key2 = await LoadAnchorsWithType(result.Value, AnchorType.Key2);
+            List<GameObject> puzzle2 = await LoadAnchorsWithType(result.Value, AnchorType.Puzzle2);
+            puzzle2[0].GetComponent<Puzzle>().Key = key2[0];*/
         }
         else
         {
             Debug.LogError($"Load failed with error {result.Status}.");
         }
+    }
+
+    private async Task<List<GameObject>> LoadAnchorsWithType(List<OVRSpatialAnchor.UnboundAnchor> anchors, AnchorType anchorType)
+    {
+        List<GameObject> objects = new List<GameObject>();
+        List<Task<GameObject>> localizationTasks = new List<Task<GameObject>>();
+
+        foreach (var unboundAnchor in anchors)
+        {
+            var objectType = PlayerPrefs.GetInt(unboundAnchor.Uuid.ToString());
+            if (objectType != Convert.ToInt32(anchorType))
+                continue;
+
+            var tcs = new TaskCompletionSource<GameObject>();
+        
+            unboundAnchor.LocalizeAsync().ContinueWith((success, anchor) =>
+            {
+                if (success)
+                {
+                    GameObject gameObjectType = m_typesList[objectType];
+                    var spatialAnchor = new GameObject($"Anchor {unboundAnchor.Uuid}")
+                        .AddComponent<OVRSpatialAnchor>();
+
+                    unboundAnchor.BindTo(spatialAnchor);
+
+                    GameObject anchorObject = Instantiate(gameObjectType, spatialAnchor.transform);
+                    anchorObject.transform.parent = spatialAnchor.transform;
+
+                    tcs.SetResult(anchorObject);
+                }
+                else
+                {
+                    Debug.LogError($"Localization failed for anchor {unboundAnchor.Uuid}");
+                    tcs.SetResult(null);
+                }
+            }, unboundAnchor);
+
+            localizationTasks.Add(tcs.Task);
+        }
+
+        var results = await Task.WhenAll(localizationTasks);
+        return results.Where(obj => obj != null).ToList();
     }
 }

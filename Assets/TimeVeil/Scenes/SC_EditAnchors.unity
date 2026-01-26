@@ -1614,13 +1614,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3b53a4be898e950419a0ff536e333303, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AnchorManager
-  m_AnchorType: 0
+  m_AnchorType: 3
   m_RaycastType: 0
   m_AnchorPrefab: {fileID: 7632126821568992051, guid: 49064347bfb1fd341af25e563bbae920, type: 3}
   m_ControllerTarget: {fileID: 53714629}
   m_LineRenderer: {fileID: 825238209}
   m_LabelFilter: -1
   m_typesList:
+  - {fileID: 2189673997934673181, guid: 70b2df3dbf9ecb04db6d34917b206e72, type: 3}
+  - {fileID: 4522208474839594492, guid: fb7a615dca076ea428e55e05aded0806, type: 3}
   - {fileID: 2189673997934673181, guid: 70b2df3dbf9ecb04db6d34917b206e72, type: 3}
   - {fileID: 4522208474839594492, guid: fb7a615dca076ea428e55e05aded0806, type: 3}
   - {fileID: 4583234249666093072, guid: 13ca296d55fc7d74b93e11750ba81599, type: 3}

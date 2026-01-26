@@ -9,8 +9,10 @@ using UnityEngine.InputSystem;
 
 public enum AnchorType
 {
-    Grabbable,
-    Static,
+    Key1,
+    Puzzle1,
+    Key2,
+    Puzzle2,
     Sentinel,
     Target
 }
@@ -194,7 +196,16 @@ public class AnchorManager : MonoBehaviour
         {
             GameObject anchor = Instantiate(m_AnchorPrefab, _hit.point, Quaternion.LookRotation(_hit.normal));
             OVRSpatialAnchor ovrSpatialAnchor = anchor.AddComponent<OVRSpatialAnchor>();
-            GameObject anchorObject = Instantiate(m_SelectedType, _hit.point, Quaternion.LookRotation(_hit.normal));
+            GameObject anchorObject;
+            if (m_AnchorType == AnchorType.Sentinel)
+            {
+                anchorObject = Instantiate(m_SelectedType, _hit.point + new Vector3(0,0.4f,0), Quaternion.LookRotation(_hit.normal + new Vector3(90,0,0)));
+            }
+            else
+            {
+                anchorObject = Instantiate(m_SelectedType, _hit.point, Quaternion.LookRotation(_hit.normal));
+            }
+
             anchorObject.transform.parent = ovrSpatialAnchor.transform;
 
             // Wait for the async creation
