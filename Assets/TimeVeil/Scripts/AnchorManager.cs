@@ -6,13 +6,12 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.SceneManagement;
 
 public enum AnchorType
 {
-    Key1,
     Puzzle1,
-    Key2,
-    Puzzle2,
+    Static,
     Sentinel,
     Target
 }
@@ -31,7 +30,8 @@ public enum RaycastType
 /// </summary>
 public class AnchorManager : MonoBehaviour
 {
-    [SerializeField] private AnchorType m_AnchorType;
+    //[SerializeField] private AnchorType m_AnchorType;
+    private int m_AnchorTypeIndex = 0;
 
     /// <summary>
     /// Current type of raycast use to find a hit
@@ -99,13 +99,15 @@ public class AnchorManager : MonoBehaviour
         m_PendingSpatialAnchor = null;
         m_PendingGameObject = null;
         m_CreatedAnchors = new List<GameObject>();
-        m_SelectedType = m_typesList[Convert.ToInt32(m_AnchorType)];
+        m_SelectedType = m_typesList[m_AnchorTypeIndex];
 
         // Bind Input on Place function
         m_InputActions.Player.Place.performed += Place;
         m_InputActions.Player.Save.performed += OnSaveButtonPressed;
         m_InputActions.Player.Cancel.performed += OnCancelButtonPressed;
         m_InputActions.Player.Clear.performed += ClearAllSavedAnchors;
+        m_InputActions.Player.NextScene.performed += GoToNextScene;
+        m_InputActions.Player.NextAnchorType.performed += NextAnchorType;
 
         LoadAnchorsByUuid(LoadAnchorsUuids());
     }
@@ -113,7 +115,7 @@ public class AnchorManager : MonoBehaviour
     void Update()
     {
         DisplayRaycast();
-        m_SelectedType = m_typesList[Convert.ToInt32(m_AnchorType)];
+        m_SelectedType = m_typesList[m_AnchorTypeIndex];
     }
 
     /// <summary>
@@ -194,18 +196,23 @@ public class AnchorManager : MonoBehaviour
     {
         if (m_PendingSpatialAnchor == null)
         {
-            GameObject anchor = Instantiate(m_AnchorPrefab, _hit.point, Quaternion.LookRotation(_hit.normal));
-            OVRSpatialAnchor ovrSpatialAnchor = anchor.AddComponent<OVRSpatialAnchor>();
+            GameObject anchor;
             GameObject anchorObject;
-            if (m_AnchorType == AnchorType.Sentinel)
+            if (m_AnchorTypeIndex == Convert.ToInt32(AnchorType.Sentinel))
             {
-                anchorObject = Instantiate(m_SelectedType, _hit.point + new Vector3(0,0.4f,0), Quaternion.LookRotation(_hit.normal + new Vector3(90,0,0)));
+                anchor = Instantiate(m_AnchorPrefab, _hit.point + new Vector3(0,0.4f,0), Quaternion.LookRotation(_hit.normal/* + new Vector3(90,0,0)*/));
+            }
+            else if(m_AnchorTypeIndex == Convert.ToInt32(AnchorType.Puzzle1))
+            {
+                anchor = Instantiate(m_AnchorPrefab, _hit.point, Quaternion.LookRotation(_hit.normal + new Vector3(90,0,0)));
             }
             else
             {
-                anchorObject = Instantiate(m_SelectedType, _hit.point, Quaternion.LookRotation(_hit.normal));
+                anchor = Instantiate(m_AnchorPrefab, _hit.point, Quaternion.LookRotation(_hit.normal));
             }
-
+            
+            anchorObject = Instantiate(m_SelectedType, _hit.point, Quaternion.LookRotation(_hit.normal));
+            OVRSpatialAnchor ovrSpatialAnchor = anchor.AddComponent<OVRSpatialAnchor>();
             anchorObject.transform.parent = ovrSpatialAnchor.transform;
 
             // Wait for the async creation
@@ -245,7 +252,7 @@ public class AnchorManager : MonoBehaviour
                     PlayerPrefs.SetString("SavedAnchors", anchor.Uuid + ",");
                 }
 
-                PlayerPrefs.SetInt(anchor.Uuid.ToString(), Convert.ToInt32(m_AnchorType));
+                PlayerPrefs.SetInt(anchor.Uuid.ToString(), m_AnchorTypeIndex);
 
                 Debug.Log($"[My Debug] Anchor {anchor.Uuid} saved successfully.");
                 m_CreatedAnchors.Add(anchor.gameObject);
@@ -351,5 +358,22 @@ public class AnchorManager : MonoBehaviour
         }
 
         Debug.Log("[My Debug] All saved anchors cleared");
+    }
+
+    private void GoToNextScene(InputAction.CallbackContext callbackContext)
+    {
+        SceneManager.LoadScene(1);
+    }
+    
+    private void NextAnchorType(InputAction.CallbackContext callbackContext)
+    {
+        if (m_AnchorTypeIndex < m_typesList.Count - 1)
+        {
+            m_AnchorTypeIndex++;
+        }
+        else
+        {
+            m_AnchorTypeIndex = 0;
+        }
     }
 }

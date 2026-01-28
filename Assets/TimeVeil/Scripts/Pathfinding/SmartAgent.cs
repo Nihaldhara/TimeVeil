@@ -28,7 +28,7 @@ public class SmartAgent : MonoBehaviour
     private int m_CurrentTarget = 0;
 
     [Header("Movement")]
-    private float m_MoveSpeed = 1.0f;
+    private float m_MoveSpeed = 0.02f;
 
     /// <summary>
     /// 
@@ -74,6 +74,7 @@ public class SmartAgent : MonoBehaviour
         var player = GameObject.FindWithTag("Player");
         if (player != null)
         {
+            m_Blackboard.Set("PlayerTransform", player.transform);
             m_PlayerPosition = player.transform;
             Debug.Log("[My Debug] Player found");
         }
@@ -109,17 +110,16 @@ public class SmartAgent : MonoBehaviour
             moveTargetsActionNodes.Add(new MoveAction(m_Blackboard, m_MoveSpeed, target.transform));
         }
 
-        /*IBTNode playerCloseConditionNode = new IsPlayerClose(m_Blackboard);
+        IBTNode playerCloseConditionNode = new IsPlayerClose(m_Blackboard);
         IBTNode moveToPlayerAction = new MoveAction(m_Blackboard, m_MoveSpeed, m_PlayerPosition);
         IBTNode sentinelWatchSelector = new SelectorNode(
             new WaitUntilConditionCompleteDecorator(m_Blackboard, playerCloseConditionNode, moveToPlayerAction),
             new SequenceNode(moveTargetsActionNodes.ToArray())
         );
-        IBTNode puzzleSolvedConditionNode = new HasFirstPuzzleBeenSolved(true);*/
+        IBTNode puzzleSolvedConditionNode = new HasFirstPuzzleBeenSolved(true);
 
-        m_BehaviorTree = new SequenceNode(moveTargetsActionNodes.ToArray());
-        Debug.Log("[My Debug] Behaviour tree built successfully. Evaluate: " + m_BehaviorTree.Evaluate());
-        //new WaitUntilConditionCompleteDecorator(m_Blackboard, puzzleSolvedConditionNode, sentinelWatchSelector);
+        m_BehaviorTree = new WaitUntilConditionCompleteDecorator(m_Blackboard, puzzleSolvedConditionNode, sentinelWatchSelector);;
+        Debug.Log("[My Debug] Behaviour tree built successfully.");
     }
 
     public void AddTarget(GameObject newTarget)

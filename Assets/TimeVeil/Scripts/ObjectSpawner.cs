@@ -50,6 +50,8 @@ public class ObjectSpawner : MonoBehaviour
         {
             Debug.Log($"[My Debug] Anchors loaded successfully.");
 
+            List<GameObject> puzzles = new List<GameObject>();
+            List<GameObject> statics = await LoadAnchorsWithType(result.Value, AnchorType.Static);
             List<GameObject> targets = await LoadAnchorsWithType(result.Value, AnchorType.Target);
             List<Vector3> targetPositions = new List<Vector3>();
             foreach (var target in targets)
@@ -66,12 +68,14 @@ public class ObjectSpawner : MonoBehaviour
                 SimpleAgent sentinelSimpleAgent = sentinel.GetComponent<SimpleAgent>();
                 sentinelSimpleAgent.Path = targetPositions.ToArray();
             }
-            List<GameObject> key1 = await LoadAnchorsWithType(result.Value, AnchorType.Key1);
             List<GameObject> puzzle1 = await LoadAnchorsWithType(result.Value, AnchorType.Puzzle1);
-            puzzle1[0].GetComponent<Puzzle>().Key = key1[0];
-            /*List<GameObject> key2 = await LoadAnchorsWithType(result.Value, AnchorType.Key2);
-            List<GameObject> puzzle2 = await LoadAnchorsWithType(result.Value, AnchorType.Puzzle2);
-            puzzle2[0].GetComponent<Puzzle>().Key = key2[0];*/
+            puzzle1[0].GetComponent<Puzzle>().Clue = "William The Conqueror's mother was but a child of a modest tanner." +
+                                                     "The young king was given birth to here, among the tools and works of his grandfather." +
+                                                     "You could say that is where the KEY to Normandy's glory came to life...";
+            puzzles.Add(puzzle1[0]);
+            
+            PuzzleInfoSender.Instance.PuzzlesList = puzzles;
+            PuzzleInfoSender.Instance.SendPuzzlesData();
         }
         else
         {
@@ -104,6 +108,11 @@ public class ObjectSpawner : MonoBehaviour
 
                     GameObject anchorObject = Instantiate(gameObjectType, spatialAnchor.transform);
                     anchorObject.transform.parent = spatialAnchor.transform;
+
+                    /*if (objectType == (int)AnchorType.Puzzle1)
+                    {
+                        anchorObject.transform.rotation = Quaternion.Euler(90.0f,0.0f,0.0f);
+                    }*/
 
                     tcs.SetResult(anchorObject);
                 }

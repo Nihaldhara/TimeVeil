@@ -1,6 +1,9 @@
+using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Text;
 using Unity.Collections;
+
 using Unity.Networking.Transport;
 using Unity.Networking.Transport.TLS;
 using Unity.Networking.Transport.Utilities;
@@ -54,7 +57,7 @@ public class SecureClient : MonoBehaviour
         m_ClientGameManager.DataUnreliableSendEvent.AddListener(DataSendUnReliable);
 
         m_ClientGameManager.DataReliableSendEvent.AddListener(DataSendReliable);
-
+        
         var settings = new NetworkSettings();
         settings.WithNetworkConfigParameters(maxMessageSize: 1472);
 
@@ -178,7 +181,25 @@ public class SecureClient : MonoBehaviour
 
         // Decode UTF-8 to string
         string data = Encoding.UTF8.GetString(bytes.ToArray());
+        
+        string[] splitData = data.Split("|");
+        DataLabel index = (DataLabel)Convert.ToInt16(splitData[0]);
 
+        switch (index)
+        {
+            case DataLabel.WallTransform:
+                m_ClientGameManager.WallTransformReceiveEvent.Invoke(splitData[1]);
+                break;
+            case DataLabel.PlayerPosition:
+                m_ClientGameManager.PlayerPositionReceiveEvent.Invoke(splitData[1]);
+                break;
+            case DataLabel.SentinelPosition:
+                m_ClientGameManager.SentinelPositionReceiveEvent.Invoke(splitData[1]);
+                break;
+            case DataLabel.PuzzleInfo:
+                m_ClientGameManager.PuzzleInfoReceiveEvent.Invoke(splitData[1]);
+                break;
+        }
         m_ClientGameManager.DataReceiveEvent.Invoke(data);
 
         if (m_EnableDebug)

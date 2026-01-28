@@ -34,18 +34,13 @@ public class ServerGameManager : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        DataUnreliableSendEvent.AddListener(TestSend);
         //DataReceiveEvent.AddListener(TestReceive);
     }
 
-    // Update is called once per frame
-    void Update()
+    void TestSend(string data, int client)
     {
-        
-    }
-
-    void TestReceive(string data)
-    {
-        Debug.Log($"ServerGameManager Receive : {data}");
-        DataUnreliableSendEvent.Invoke("SendTestToClient", 0);
+        Debug.Log($"ServerGameManager Send : {data}");
+        //DataUnreliableSendEvent.Invoke("SendTestToClient", 0);
     }
 }

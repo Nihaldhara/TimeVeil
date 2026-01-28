@@ -1,3 +1,4 @@
+using Unity.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -10,12 +11,22 @@ public class ClientGameManager : MonoBehaviour
     public UnityEvent<string> DataReceiveEvent;
 
     [HideInInspector]
+    public UnityEvent<string> WallTransformReceiveEvent;
+    
+    [HideInInspector]
+    public UnityEvent<string> PlayerPositionReceiveEvent;
+
+    [HideInInspector]
+    public UnityEvent<string> SentinelPositionReceiveEvent;
+
+    [HideInInspector]
+    public UnityEvent<string> PuzzleInfoReceiveEvent;
+
+    [HideInInspector]
     public UnityEvent<string> DataUnreliableSendEvent;
 
     [HideInInspector]
     public UnityEvent<string> DataReliableSendEvent;
-
-
 
     [HideInInspector]
     public UnityEvent FailedConnectEvent;
@@ -39,8 +50,8 @@ public class ClientGameManager : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        //DataReceiveEvent.AddListener(TestReceive);
-        //ConnectedEvent.AddListener(Connection);
+        //PlayerPositionReceiveEvent.AddListener(TestReceive);
+        ConnectedEvent.AddListener(Connection);
     }
 
     // Update is called once per frame

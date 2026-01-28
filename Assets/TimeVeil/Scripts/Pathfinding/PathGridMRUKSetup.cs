@@ -1,4 +1,6 @@
+using System.Collections.Generic;
 using Meta.XR.MRUtilityKit;
+using Unity.VisualScripting;
 using UnityEngine;
 
 public class PathGridMRUKSetup : MonoBehaviour
@@ -20,6 +22,7 @@ public class PathGridMRUKSetup : MonoBehaviour
     void OnSceneLoaded()
     {
         MRUKRoom room = MRUK.Instance.GetCurrentRoom();
+        
         MRUKAnchor floor = room.FloorAnchor;
 
         if (room == null)
@@ -31,6 +34,12 @@ public class PathGridMRUKSetup : MonoBehaviour
         {
             // Get floor bounds
             Vector2 floorSize = floor.PlaneRect.Value.size;
+            
+            // Add a box collider if none exists
+            if (!floor.GetComponent<Collider>())
+            {
+                floor.AddComponent<BoxCollider>();
+            }
             
             // Position grid at floor center
             m_PathGrid.transform.position = floor.transform.position;

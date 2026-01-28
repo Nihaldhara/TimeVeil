@@ -58,7 +58,7 @@ public class SecureServer : MonoBehaviour
         m_ServerGameManager.DataUnreliableSendEvent.AddListener(DataSendUnReliable);
 
         m_ServerGameManager.DataReliableSendEvent.AddListener(DataSendReliable);
-
+        
         // --- 1. NETWORK SETTINGS ---
         NetworkSettings settings = new NetworkSettings();
 
@@ -176,6 +176,7 @@ public class SecureServer : MonoBehaviour
         while ((c = m_Driver.Accept()) != default)
         {
             m_Connections.Add(c);
+            m_ServerGameManager.ClientConnectionEvent.Invoke();
 
             if (m_EnableDebug)
                 Debug.Log("Server: New client connected.");
@@ -188,6 +189,12 @@ public class SecureServer : MonoBehaviour
             NetworkEvent.Type cmd;
             while ((cmd = m_Driver.PopEventForConnection(m_Connections[i], out stream)) != NetworkEvent.Type.Empty)
             {
+                if (cmd == NetworkEvent.Type.Connect)
+                {
+                    if (m_EnableDebug)
+                        Debug.Log("Server: Client connected.");
+
+                }
                 if (cmd == NetworkEvent.Type.Data)
                 {
                     DataReceive(stream);

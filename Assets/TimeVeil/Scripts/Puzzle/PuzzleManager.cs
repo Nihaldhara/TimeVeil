@@ -66,15 +66,15 @@ public class PuzzleManager : MonoBehaviour
             m_Player.gameObject.GetComponent<PlayerController>().Die();
         }
         
-        if (m_Puzzles.Count <= 0)
+        /*if (m_Puzzles.Count <= 0)
         {
             Debug.Log("Congrats, you solved all the puzzles !");
             m_GameWon = true; 
-            /*foreach (var sentinel in m_Sentinels)
+            foreach (var sentinel in m_Sentinels)
             {
                 sentinel.SetActive(false);
-            }*/
-        }
+            }
+        }*/
     }
 
     public void FinishPuzzle(GameObject puzzle)

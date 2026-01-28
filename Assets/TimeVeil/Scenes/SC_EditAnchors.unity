@@ -971,6 +971,7 @@ MonoBehaviour:
   requestEyeTrackingPermissionOnStartup: 0
   requestScenePermissionOnStartup: 1
   requestRecordAudioPermissionOnStartup: 0
+  requestPassthroughCameraAccessPermissionOnStartup: 0
   _localDimming: 1
   _trackingOriginType: 1
   usePositionTracking: 1
@@ -1559,6 +1560,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: meta.xr.mrutilitykit::Meta.XR.MRUtilityKit.EffectMesh
   SpawnOnStart: 1
   MeshMaterial: {fileID: 0}
+  BarycentricCoordinatesEnabled: 0
   Colliders: 1
   CutHoles: 0
   castShadows: 0
@@ -1614,20 +1616,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3b53a4be898e950419a0ff536e333303, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::AnchorManager
-  m_AnchorType: 3
+  m_AnchorType: 0
   m_RaycastType: 0
   m_AnchorPrefab: {fileID: 7632126821568992051, guid: 49064347bfb1fd341af25e563bbae920, type: 3}
   m_ControllerTarget: {fileID: 53714629}
   m_LineRenderer: {fileID: 825238209}
   m_LabelFilter: -1
   m_typesList:
-  - {fileID: 2189673997934673181, guid: 70b2df3dbf9ecb04db6d34917b206e72, type: 3}
   - {fileID: 4522208474839594492, guid: a4abf0cf52097f14dac05864410f4ba3, type: 3}
-  - {fileID: 2189673997934673181, guid: 70b2df3dbf9ecb04db6d34917b206e72, type: 3}
-  - {fileID: 4522208474839594492, guid: a4abf0cf52097f14dac05864410f4ba3, type: 3}
+  - {fileID: 4522208474839594492, guid: fb7a615dca076ea428e55e05aded0806, type: 3}
   - {fileID: 4583234249666093072, guid: 13ca296d55fc7d74b93e11750ba81599, type: 3}
   - {fileID: 7928448709485006049, guid: 6c753635cf102b442abd5c701f996d2f, type: 3}
-  - {fileID: 4522208474839594492, guid: fb7a615dca076ea428e55e05aded0806, type: 3}
 --- !u!4 &825238208
 Transform:
   m_ObjectHideFlags: 0
@@ -3102,6 +3101,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: meta.xr.mrutilitykit::Meta.XR.MRUtilityKit.EffectMesh
   SpawnOnStart: 1
   MeshMaterial: {fileID: 2100000, guid: 872bdf883587b624f85b23d8ed2844c8, type: 2}
+  BarycentricCoordinatesEnabled: 0
   Colliders: 0
   CutHoles: 0
   castShadows: 1
@@ -3329,6 +3329,7 @@ MonoBehaviour:
     RoomPrefabs: []
     SceneJsons: []
     LoadSceneOnStartup: 1
+    EnableHighFidelityScene: 0
     SeatWidth: 0.6
     SceneJson: 
     <TrackerConfiguration>k__BackingField:

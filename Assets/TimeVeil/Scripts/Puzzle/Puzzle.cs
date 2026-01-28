@@ -3,44 +3,29 @@ using System.Collections.Generic;
 using Oculus.Interaction;
 using UnityEngine;
 
-public class Puzzle : MonoBehaviour
+public abstract class Puzzle : MonoBehaviour
 {
-    private GameObject m_Key;
+    private string m_Clue;
 
-    public GameObject Key
+    public string Clue
     {
-        get => m_Key;
-        set
-        {
-            m_Key = value;
-            Debug.Log("[My Debug] A key was assigned to this puzzle: " + this);
-        }
+        get => m_Clue;
+        set => m_Clue = value;
     }
+
+    public bool Solved = false;
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject == m_Key && other.gameObject.GetComponent<Key>().Grabbed)
+        if (other.gameObject.CompareTag("OldDoorKey"))
         {
             Debug.Log("[My Debug] You found the correct key !");
             PuzzleManager.Instance.FinishPuzzle(gameObject);
             other.gameObject.SetActive(false);
-            gameObject.SetActive(false);
+            Solved = true;
+            TriggerPuzzle();
         }
-        
-        /*if (other.CompareTag("Player"))
-        {
-            List<GameObject> playerKeys = other.GetComponent<PlayerController>().GetCollectedKeys();
-            if (playerKeys.Contains(m_Key))
-            {
-                Debug.Log("[My Debug] You found the correct key !");
-                other.GetComponent<PlayerController>().ConsumeKey(m_Key);
-                PuzzleManager.Instance.FinishPuzzle(gameObject);
-                gameObject.SetActive(false);
-            }
-            else
-            {
-                Debug.Log("[My Debug] You don't have the right key...");
-            }
-        }*/
     }
+
+    protected abstract void TriggerPuzzle();
 }
