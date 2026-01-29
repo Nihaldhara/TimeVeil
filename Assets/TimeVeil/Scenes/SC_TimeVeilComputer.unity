@@ -365,7 +365,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SecureClient
   m_EnableDebug: 1
-  serverIP: 10.105.250.183
+  serverIP: 10.105.0.3
   port: 12000
   m_UseNetworkSimulator: 0
   m_MaxPacketCount: 0

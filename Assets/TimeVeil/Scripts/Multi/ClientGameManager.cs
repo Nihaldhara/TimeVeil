@@ -23,6 +23,9 @@ public class ClientGameManager : MonoBehaviour
     public UnityEvent<string> PuzzleInfoReceiveEvent;
 
     [HideInInspector]
+    public UnityEvent<string> GameStateReceiveEvent;
+    
+    [HideInInspector]
     public UnityEvent<string> DataUnreliableSendEvent;
 
     [HideInInspector]
@@ -50,24 +53,12 @@ public class ClientGameManager : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        //PlayerPositionReceiveEvent.AddListener(TestReceive);
         ConnectedEvent.AddListener(Connection);
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-
     }
 
     void Connection()
     {
         Debug.Log($"ClientGameManager Send : Connected Test");
 
-    }
-
-    void TestReceive(string data)
-    {
-        Debug.Log($"ClientGameManager Receive : {data}");
     }
 }

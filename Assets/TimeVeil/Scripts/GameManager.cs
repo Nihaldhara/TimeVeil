@@ -1,18 +1,7 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
-
-public enum GameState
-{
-    Waiting,
-    Started,
-    Stage1,
-    Stage2,
-    Stage3,
-    Stage4,
-    Succeeded,
-    Failed
-}
 
 public class GameManager : MonoBehaviour
 {
@@ -36,10 +25,20 @@ public class GameManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
     }
-
-    private GameState m_CurrentGameState;
-
-    public GameState CurrentGameState => m_CurrentGameState;
+    
+    private GameState _currentGameState;
+    private GameState m_CurrentGameState
+    {
+        get => _currentGameState;
+        set
+        {
+            if (_currentGameState != value)
+            {
+                _currentGameState = value;
+                OnGameStateChanged();
+            }
+        }
+    }
 
     private List<GameObject> m_PuzzlesList;
 
@@ -54,6 +53,8 @@ public class GameManager : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        m_RemainingTime = m_TotalTime;
+        
         m_ServerGameManager = ServerGameManager.Instance;
         m_CurrentGameState = GameState.Waiting;
         Debug.Log("GameState: " + m_CurrentGameState);
@@ -64,8 +65,12 @@ public class GameManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        m_RemainingTime -= Time.deltaTime;
-        
+        if (m_CurrentGameState == GameState.Waiting)
+        {
+            Debug.Log("GameState: " + m_CurrentGameState);
+            return;
+        }
+         
         if (PlayerDead || m_RemainingTime <= 0.0f)
         {
             m_CurrentGameState = GameState.Failed;
@@ -73,6 +78,8 @@ public class GameManager : MonoBehaviour
         }
         else
         {
+            m_RemainingTime -= Time.deltaTime;
+            
             int solvedCount = 0;
             for (int i = 0; i < m_PuzzlesList.Count; i++)
             {
@@ -98,5 +105,14 @@ public class GameManager : MonoBehaviour
         m_CurrentGameState = GameState.Started;
         ClientConnectedEvent.Invoke();
         Debug.Log("GameState: " + m_CurrentGameState);
+    }
+
+    void OnGameStateChanged()
+    {
+        string gameState = Convert.ToInt32(m_CurrentGameState).ToString();
+        
+        string data = (int)DataLabel.GameState + "|" + gameState;
+        
+        m_ServerGameManager.DataReliableSendEvent.Invoke(data, 0);
     }
 }

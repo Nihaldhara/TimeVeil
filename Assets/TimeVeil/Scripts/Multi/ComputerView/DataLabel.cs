@@ -6,5 +6,5 @@ public enum DataLabel
     PlayerPosition,
     SentinelPosition,
     PuzzleInfo,
-    Timer
+    GameState
 }

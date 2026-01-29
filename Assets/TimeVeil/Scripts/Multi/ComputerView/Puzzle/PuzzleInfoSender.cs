@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class PuzzleInfoSender : MonoBehaviour
 {
+    private GameManager m_GameManager;
+    
     private List<GameObject> m_PuzzlesList;
 
     public List<GameObject> PuzzlesList
@@ -32,15 +34,21 @@ public class PuzzleInfoSender : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
     }
-    
+
+    private void Start()
+    {
+        m_GameManager = GameManager.Instance;
+        
+        m_GameManager.ClientConnectedEvent.AddListener(SendPuzzlesData);
+    }
+
     public void SendPuzzlesData()
     {
         Transform parentTransform = transform.parent;
         
-        Debug.Log("No puzzle...");
+        Debug.Log("PuzzleInfoSender: Sending puzzle data");
         foreach (var puzzle in m_PuzzlesList)
         {
-            Debug.Log("Puzzle!!!!!!!!!!!!!");
             string positionData = SerializeFloat(parentTransform.position.x) + "/" +
                                   SerializeFloat(parentTransform.position.y) + "/" +
                                   SerializeFloat(parentTransform.position.z) + "/";
