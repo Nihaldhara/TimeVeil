@@ -200,18 +200,18 @@ public class AnchorManager : MonoBehaviour
             GameObject anchorObject;
             if (m_AnchorTypeIndex == Convert.ToInt32(AnchorType.Sentinel))
             {
-                anchor = Instantiate(m_AnchorPrefab, _hit.point + new Vector3(0,0.4f,0), Quaternion.LookRotation(_hit.normal/* + new Vector3(90,0,0)*/));
+                anchor = Instantiate(m_AnchorPrefab, _hit.point + new Vector3(0,0.4f,0), Quaternion.LookRotation(_hit.point));
             }
             else if(m_AnchorTypeIndex == Convert.ToInt32(AnchorType.Puzzle1))
             {
-                anchor = Instantiate(m_AnchorPrefab, _hit.point, Quaternion.LookRotation(_hit.normal + new Vector3(90,0,0)));
+                anchor = Instantiate(m_AnchorPrefab, _hit.point, Quaternion.LookRotation(-_hit.point));
             }
             else
             {
-                anchor = Instantiate(m_AnchorPrefab, _hit.point, Quaternion.LookRotation(_hit.normal));
+                anchor = Instantiate(m_AnchorPrefab, _hit.point, Quaternion.LookRotation(-_hit.point));
             }
             
-            anchorObject = Instantiate(m_SelectedType, _hit.point, Quaternion.LookRotation(_hit.normal));
+            anchorObject = Instantiate(m_SelectedType, _hit.point, Quaternion.LookRotation(-_hit.point));
             OVRSpatialAnchor ovrSpatialAnchor = anchor.AddComponent<OVRSpatialAnchor>();
             anchorObject.transform.parent = ovrSpatialAnchor.transform;
 

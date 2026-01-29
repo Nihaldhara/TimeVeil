@@ -109,11 +109,6 @@ public class ObjectSpawner : MonoBehaviour
                     GameObject anchorObject = Instantiate(gameObjectType, spatialAnchor.transform);
                     anchorObject.transform.parent = spatialAnchor.transform;
 
-                    /*if (objectType == (int)AnchorType.Puzzle1)
-                    {
-                        anchorObject.transform.rotation = Quaternion.Euler(90.0f,0.0f,0.0f);
-                    }*/
-
                     tcs.SetResult(anchorObject);
                 }
                 else

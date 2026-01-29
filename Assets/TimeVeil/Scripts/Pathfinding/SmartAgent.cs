@@ -4,7 +4,6 @@ using UnityEngine;
 
 /// <summary>
 /// Controls a crowd agent using a behavior tree.
-/// The agent can move, dance, and react to traffic light states.
 /// </summary>
 [RequireComponent(typeof(Pathfinding))]
 public class SmartAgent : MonoBehaviour
@@ -120,10 +119,5 @@ public class SmartAgent : MonoBehaviour
 
         m_BehaviorTree = new WaitUntilConditionCompleteDecorator(m_Blackboard, puzzleSolvedConditionNode, sentinelWatchSelector);;
         Debug.Log("[My Debug] Behaviour tree built successfully.");
-    }
-
-    public void AddTarget(GameObject newTarget)
-    {
-        m_TargetsList.Add(newTarget);
     }
 }
