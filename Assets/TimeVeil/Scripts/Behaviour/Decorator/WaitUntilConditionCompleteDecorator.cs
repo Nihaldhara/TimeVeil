@@ -1,3 +1,5 @@
+using UnityEngine;
+
 /// <summary>
 /// A decorator node that waits for a condition to be true before executing an action.
 /// Once the condition is met, the action is allowed to complete even if the condition becomes false.
@@ -39,9 +41,11 @@ public class WaitUntilConditionCompleteDecorator : IBTNode
     public NodeState Evaluate()
     {
         bool isRunning = m_Blackboard.Get<bool>(m_StateKey);
+        Debug.Log("WaitUntilConditionCompleteDecorator: isRunning " + isRunning);
 
         if (!isRunning)
         {
+        Debug.Log("WaitUntilConditionCompleteDecorator: Condition node evaluation : " + m_ConditionNode.Evaluate());
             if (m_ConditionNode.Evaluate() != NodeState.Success)
                 return NodeState.Failure;
 

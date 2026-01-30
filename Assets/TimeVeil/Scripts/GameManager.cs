@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -11,6 +12,11 @@ public class GameManager : MonoBehaviour
     private ServerGameManager m_ServerGameManager;
     
     public UnityEvent ClientConnectedEvent;
+    
+    public bool checkFirstPuzzleState = false;
+    
+    [HideInInspector]
+    public UnityEvent PlayerEnteredTriggerEvent;
     
     public static GameManager Instance { get; private set; }
 
@@ -45,7 +51,11 @@ public class GameManager : MonoBehaviour
     public List<GameObject> PuzzlesList
     {
         get => m_PuzzlesList;
-        set => m_PuzzlesList = value;
+        set
+        {
+            m_PuzzlesList = value;
+            Debug.Log("GameManager: PuzzlesList was set and it contains this amount of puzzles " + m_PuzzlesList.Count);
+        }
     }
 
     public bool PlayerDead = false;
@@ -56,8 +66,7 @@ public class GameManager : MonoBehaviour
         m_RemainingTime = m_TotalTime;
         
         m_ServerGameManager = ServerGameManager.Instance;
-        m_CurrentGameState = GameState.Waiting;
-        Debug.Log("GameState: " + m_CurrentGameState);
+        m_CurrentGameState = GameState.Started;
         
         m_ServerGameManager.ClientConnectionEvent.AddListener(OnClientConnected);
     }
@@ -67,14 +76,13 @@ public class GameManager : MonoBehaviour
     {
         if (m_CurrentGameState == GameState.Waiting)
         {
-            Debug.Log("GameState: " + m_CurrentGameState);
             return;
         }
          
         if (PlayerDead || m_RemainingTime <= 0.0f)
         {
             m_CurrentGameState = GameState.Failed;
-            Debug.Log("GameState: " + m_CurrentGameState);
+            SceneManager.LoadScene(1);
         }
         else
         {
@@ -86,6 +94,8 @@ public class GameManager : MonoBehaviour
                 if (!m_PuzzlesList[i].GetComponent<Puzzle>().Solved)
                     break;
                 solvedCount++;
+                Debug.Log("GameManager: A puzzle has been solved, now there are " + solvedCount);
+                checkFirstPuzzleState = true;
             }
     
             m_CurrentGameState = solvedCount switch
@@ -99,12 +109,11 @@ public class GameManager : MonoBehaviour
             };
         }
     }
-
+    
     void OnClientConnected()
     {
         m_CurrentGameState = GameState.Started;
         ClientConnectedEvent.Invoke();
-        Debug.Log("GameState: " + m_CurrentGameState);
     }
 
     void OnGameStateChanged()
@@ -112,7 +121,8 @@ public class GameManager : MonoBehaviour
         string gameState = Convert.ToInt32(m_CurrentGameState).ToString();
         
         string data = (int)DataLabel.GameState + "|" + gameState;
-        
+            
+        Debug.Log("GameState: " + m_CurrentGameState);
         m_ServerGameManager.DataReliableSendEvent.Invoke(data, 0);
     }
 }

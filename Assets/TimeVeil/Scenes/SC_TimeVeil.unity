@@ -119,6 +119,50 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &26029885
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 26029887}
+  - component: {fileID: 26029886}
+  m_Layer: 0
+  m_Name: RoomReference
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &26029886
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 26029885}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0cead9116f80f3a48ba00389f17b3114, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::RoomReference
+--- !u!4 &26029887
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 26029885}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -3.7062, y: 0.63465, z: -0.00944}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &53714628
 GameObject:
   m_ObjectHideFlags: 0
@@ -585,7 +629,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::PathGrid
   m_UnwalkableMask:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 64
   m_WalkableMask:
     serializedVersion: 2
     m_Bits: 4294967295
@@ -715,6 +759,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::GameManager
   m_TotalTime: 60
   ClientConnectedEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  checkFirstPuzzleState: 0
+  PlayerEnteredTriggerEvent:
     m_PersistentCalls:
       m_Calls: []
   PlayerDead: 0
@@ -1678,55 +1726,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc6c507f11d461b41abf04e6fe82b1e9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PositionTracker
---- !u!1 &1203325575
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1203325577}
-  - component: {fileID: 1203325576}
-  m_Layer: 0
-  m_Name: PuzzleManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1203325576
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1203325575}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e1e980b5b01894140a95af4cc7f39353, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PuzzleManager
-  m_GameTime: 300
-  m_Puzzles: []
-  m_Sentinels: []
-  m_Player: {fileID: 0}
-  checkFirstPuzzleState: 0
---- !u!4 &1203325577
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1203325575}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1225257374
 GameObject:
   m_ObjectHideFlags: 0
@@ -2792,10 +2791,10 @@ SceneRoots:
   - {fileID: 418164655}
   - {fileID: 672393374}
   - {fileID: 419527182}
-  - {fileID: 1203325577}
   - {fileID: 1582169762}
   - {fileID: 316247828}
   - {fileID: 1814798620}
   - {fileID: 612853672}
   - {fileID: 1865348019}
   - {fileID: 448496148}
+  - {fileID: 26029887}

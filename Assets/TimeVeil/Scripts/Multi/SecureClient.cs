@@ -50,6 +50,8 @@ public class SecureClient : MonoBehaviour
     private NetworkPipeline m_ReliableFragmentedPipeline;
     private NetworkPipeline m_UnReliablePipeline;
 
+    private NetworkEndpoint endpoint;
+
     void Start()
     {
         m_ClientGameManager = ClientGameManager.Instance;
@@ -107,8 +109,7 @@ public class SecureClient : MonoBehaviour
 
         m_UnReliablePipeline = m_Driver.CreatePipeline(UnReliablePipelineStages.ToArray());
 
-        var endpoint = NetworkEndpoint.Parse(serverIP, port);
-        m_Connection = m_Driver.Connect(endpoint);
+        endpoint = NetworkEndpoint.Parse(serverIP, port);
 
         Debug.Log("Client: Attempting to connect to " + serverIP);
     }
@@ -120,6 +121,11 @@ public class SecureClient : MonoBehaviour
 
     void Update()
     {
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+            m_Connection = m_Driver.Connect(endpoint);
+        }
+        
         if (!m_Driver.IsCreated) return;
 
         m_Driver.ScheduleUpdate().Complete();

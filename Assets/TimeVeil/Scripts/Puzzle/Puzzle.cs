@@ -20,7 +20,6 @@ public abstract class Puzzle : MonoBehaviour
         if (other.gameObject.CompareTag("OldDoorKey"))
         {
             Debug.Log("[My Debug] You found the correct key !");
-            PuzzleManager.Instance.FinishPuzzle(gameObject);
             other.gameObject.SetActive(false);
             Solved = true;
             TriggerPuzzle();

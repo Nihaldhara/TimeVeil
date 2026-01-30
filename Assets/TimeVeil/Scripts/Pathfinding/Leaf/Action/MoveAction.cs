@@ -16,30 +16,39 @@ public class MoveAction : IBTNode
     private bool m_IsFollowingPath;
     Vector3 currentWaypoint;
 
-    public MoveAction(Blackboard blackboard, float moveSpeed, Transform target, string keyName = "")
+    public MoveAction(Blackboard blackboard, float moveSpeed, string keyName = "")
     {
         m_Blackboard = blackboard;
         m_MoveSpeed = moveSpeed;
         m_SmartCrowdTransform = m_Blackboard.Get<Transform>("CrowdTransform");
         m_PathFinding = m_Blackboard.Get<Pathfinding>("PathFinding");
-        m_Target = target;
         m_KeyName = keyName;
         m_PathFinding.OnPathUpdatedEvent += OnPathChanged;
     }
 
     public NodeState Evaluate()
     {
+        m_Target = m_Blackboard.Get<GameObject>("CurrentTarget").transform;
+        
+        if (m_Blackboard.Get<bool>(m_KeyName))
+            return NodeState.Failure;
+        
         if (m_PathFinding.IsTargetReachable(m_Target.position) && m_PathFinding.Target != m_Target)
         {
             m_PathFinding.Target = m_Target;
             m_PathFinding.AgentNeedRepath = true;
         }
-        else if (!m_PathFinding.IsTargetReachable(m_Target.position) || (m_Path == null || m_Path.Length == 0))
+    
+        if (!m_PathFinding.IsTargetReachable(m_Target.position))
         {
-            m_TargetIndex = 0;
-            m_IsFollowingPath = false;
-            m_Path = null;
+            Debug.Log("MoveAction: target is unreachable");
             return NodeState.Failure;
+        }
+    
+        if (m_Path == null || m_Path.Length == 0)
+        {
+            Debug.Log("MoveAction: waiting for path computation");
+            return NodeState.Running; 
         }
 
         if (!m_IsFollowingPath)
@@ -55,7 +64,7 @@ public class MoveAction : IBTNode
                 if (m_KeyName != "")
                     m_Blackboard.Set(m_KeyName, true);
 
-                Debug.Log("[My Debug] Target reached, moving on to next target");
+                Debug.Log("MoveAction: Target reached, moving on to next target");
                 return NodeState.Success;
             }
             currentWaypoint = m_Path[m_TargetIndex];
@@ -63,6 +72,7 @@ public class MoveAction : IBTNode
 
         m_SmartCrowdTransform.position = Vector3.MoveTowards(m_SmartCrowdTransform.position, currentWaypoint, m_MoveSpeed * Time.deltaTime);
         RotateTowards(currentWaypoint);
+        Debug.Log("MoveAction: sentinel is moving towards target");
         return NodeState.Running;
     }
 
@@ -71,6 +81,10 @@ public class MoveAction : IBTNode
     /// </summary>
     void OnPathChanged(List<Node> newPath)
     {
+        // Ignore path updates that aren't for this action's target
+        if (m_PathFinding.Target != m_Target)
+            return;
+
         m_TargetIndex = 0;
         m_IsFollowingPath = false;
 
@@ -85,7 +99,6 @@ public class MoveAction : IBTNode
         if (m_Path != null && AreWorldPathsEqual(m_Path, newWorldPath)) return;
 
         m_Path = newWorldPath;
-
     }
 
 
@@ -105,10 +118,22 @@ public class MoveAction : IBTNode
     /// <summary>
     /// Rotates the unit to face the direction of movement.
     /// </summary>
-    private void RotateTowards(Vector3 targetPosition)
+    /*private void RotateTowards(Vector3 targetPosition)
     {
         Vector3 direction = (targetPosition - m_SmartCrowdTransform.position).normalized;
         if (direction != Vector3.zero)
+        {
+            Quaternion lookRotation = Quaternion.LookRotation(direction);
+            m_SmartCrowdTransform.rotation = Quaternion.Slerp(m_SmartCrowdTransform.rotation, lookRotation, Time.deltaTime * 10f);
+        }
+    }*/
+    
+    private void RotateTowards(Vector3 targetPosition)
+    {
+        Vector3 direction = targetPosition - m_SmartCrowdTransform.position;
+        direction.y = 0; // Keep rotation on horizontal plane only
+    
+        if (direction.sqrMagnitude > 0.001f)
         {
             Quaternion lookRotation = Quaternion.LookRotation(direction);
             m_SmartCrowdTransform.rotation = Quaternion.Slerp(m_SmartCrowdTransform.rotation, lookRotation, Time.deltaTime * 10f);

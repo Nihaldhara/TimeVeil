@@ -27,16 +27,9 @@ public class SmartAgent : MonoBehaviour
     private int m_CurrentTarget = 0;
 
     [Header("Movement")]
-    private float m_MoveSpeed = 0.02f;
+    private float m_MoveSpeed = 1.0f;
 
-    /// <summary>
-    /// 
-    /// </summary>
-    public float MoveSpeed
-    {
-        set { m_MoveSpeed = value; }
-        get { return m_MoveSpeed; }
-    }
+    private float m_RunSpeed = 5.0f;
 
     private Pathfinding m_Pathfinding;
 
@@ -51,14 +44,6 @@ public class SmartAgent : MonoBehaviour
     private Transform m_PlayerPosition;
 
     /// <summary>
-    /// Reference Pathfinding
-    /// </summary>
-    public Transform PlayerPosition
-    {
-        get { return m_PlayerPosition; }
-    }
-
-    /// <summary>
     /// Initializes the behavior tree and blackboard on awake.
     /// </summary>
     void Awake()
@@ -68,7 +53,10 @@ public class SmartAgent : MonoBehaviour
 
         // Store references in the blackboard
         m_Blackboard.Set("CrowdTransform", transform);
+        m_Blackboard.Set("Sentinel", gameObject);
         m_Blackboard.Set("PathFinding", m_Pathfinding);
+        m_Blackboard.Set("TargetsList", m_TargetsList);
+        m_Blackboard.Set("CurrentTarget", m_TargetsList[0]);
 
         var player = GameObject.FindWithTag("Player");
         if (player != null)
@@ -86,7 +74,8 @@ public class SmartAgent : MonoBehaviour
     {
         if (m_BehaviorTree != null)
         {
-            Debug.Log(m_BehaviorTree.Evaluate());
+            m_BehaviorTree.Evaluate();
+            //Debug.Log(m_BehaviorTree.Evaluate());
         }
         else
         {
@@ -98,26 +87,42 @@ public class SmartAgent : MonoBehaviour
     {
         Debug.Log("[My Debug] Building behaviour tree");
 
-        if (m_TargetsList.Count > 1)
-        {
-            m_Pathfinding.Target = m_TargetsList[m_CurrentTarget].transform;
-        }
-
         List<IBTNode> moveTargetsActionNodes = new List<IBTNode>();
         foreach (var target in m_TargetsList)
         {
-            moveTargetsActionNodes.Add(new MoveAction(m_Blackboard, m_MoveSpeed, target.transform));
+            moveTargetsActionNodes.Add(new MoveAction(m_Blackboard, m_MoveSpeed));
         }
 
-        IBTNode playerCloseConditionNode = new IsPlayerClose(m_Blackboard);
-        IBTNode moveToPlayerAction = new MoveAction(m_Blackboard, m_MoveSpeed, m_PlayerPosition);
+        IBTNode playerCloseConditionNode = new IsPlayerSeen();
+        IBTNode moveToPlayerAction = new MoveAction(m_Blackboard, m_RunSpeed); //playerPosition
         IBTNode sentinelWatchSelector = new SelectorNode(
             new WaitUntilConditionCompleteDecorator(m_Blackboard, playerCloseConditionNode, moveToPlayerAction),
-            new SequenceNode(moveTargetsActionNodes.ToArray())
+            new SequenceNode(
+                moveTargetsActionNodes.ToArray()
+                )
         );
-        IBTNode puzzleSolvedConditionNode = new HasFirstPuzzleBeenSolved(true);
+        IBTNode puzzleSolvedConditionNode = new HasFirstPuzzleBeenSolved();
 
         m_BehaviorTree = new WaitUntilConditionCompleteDecorator(m_Blackboard, puzzleSolvedConditionNode, sentinelWatchSelector);;
         Debug.Log("[My Debug] Behaviour tree built successfully.");
+
+        m_Pathfinding.AgentNeedRepath = true;
     }
+    
+    /*
+     m_BehaviorTree = new SelectorNode(
+            moveTargetActionNode,
+            new SequenceNode(
+                new IsNotDoneCondition(m_Blackboard, "HasCrossed"),
+                new SelectorNode(
+                    new SequenceNode(
+                        new IsNotDoneCondition(m_Blackboard, "OnEntryPointCrosswalk"),
+                        moveTargetRecoverActionNode),
+                    new WaitUntilConditionCompleteDecorator(m_Blackboard, IsLightStateconditionNode, CrosswalkAction)
+                )
+
+
+        )
+
+     */
 }

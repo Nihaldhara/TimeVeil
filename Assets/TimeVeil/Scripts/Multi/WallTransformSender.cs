@@ -94,7 +94,7 @@ public class WallTransformSender : MonoBehaviour
                                m_DataSerializer.SerializeFloat(wall.PlaneRect.Value.size.y) + "/0.1/";
             data = (int)DataLabel.WallTransform + "|" + positionData + rotationData + scaleData;
             
-            Debug.Log("WallTransformSender: Sending " + data);
+            //Debug.Log("WallTransformSender: Sending " + data);
             
             ServerGameManager.Instance.DataReliableSendEvent.Invoke(data, 0);
         }

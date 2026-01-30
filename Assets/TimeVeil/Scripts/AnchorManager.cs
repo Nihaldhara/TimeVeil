@@ -200,11 +200,7 @@ public class AnchorManager : MonoBehaviour
             GameObject anchorObject;
             if (m_AnchorTypeIndex == Convert.ToInt32(AnchorType.Sentinel))
             {
-                anchor = Instantiate(m_AnchorPrefab, _hit.point + new Vector3(0,0.4f,0), Quaternion.LookRotation(_hit.point));
-            }
-            else if(m_AnchorTypeIndex == Convert.ToInt32(AnchorType.Puzzle1))
-            {
-                anchor = Instantiate(m_AnchorPrefab, _hit.point, Quaternion.LookRotation(-_hit.point));
+                anchor = Instantiate(m_AnchorPrefab, _hit.point/* + new Vector3(0,0.4f,0)*/, Quaternion.LookRotation(_hit.point));
             }
             else
             {

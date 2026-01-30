@@ -1,21 +1,21 @@
+using UnityEngine;
+
 public class HasFirstPuzzleBeenSolved : IBTNode
 {
-    private bool m_CheckFirstPuzzleState;
+    private GameManager m_GameManager;
     
-    public HasFirstPuzzleBeenSolved(bool checkFirstPuzzleState)
+    public HasFirstPuzzleBeenSolved()
     {
-        m_CheckFirstPuzzleState = checkFirstPuzzleState;
+        m_GameManager = GameManager.Instance;
     }
     
     public NodeState Evaluate()
     {
-        var puzzleManager = PuzzleManager.Instance;
-        
-        if (puzzleManager == null)
-            return NodeState.Failure;
-            
-        return puzzleManager.checkFirstPuzzleState == m_CheckFirstPuzzleState 
-            ? NodeState.Success 
-            : NodeState.Failure;
+        if (m_GameManager.checkFirstPuzzleState)
+        {
+            return NodeState.Success;
+        }
+
+        return NodeState.Failure;
     }
 }

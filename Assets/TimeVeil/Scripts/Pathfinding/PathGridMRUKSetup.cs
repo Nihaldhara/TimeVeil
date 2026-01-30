@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Collections.Generic;
 using Meta.XR.MRUtilityKit;
 using Unity.VisualScripting;
@@ -21,6 +22,13 @@ public class PathGridMRUKSetup : MonoBehaviour
     
     void OnSceneLoaded()
     {
+        StartCoroutine(SetUpGrid());
+    }
+
+    IEnumerator SetUpGrid()
+    {
+        yield return new WaitForSeconds(1.0f);
+
         MRUKRoom room = MRUK.Instance.GetCurrentRoom();
         
         MRUKAnchor floor = room.FloorAnchor;

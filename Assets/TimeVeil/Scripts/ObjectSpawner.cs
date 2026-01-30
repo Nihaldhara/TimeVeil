@@ -65,8 +65,6 @@ public class ObjectSpawner : MonoBehaviour
                 sentinelPathfinding.Grid = m_PathGrid;
                 SmartAgent sentinelSmartAgent = sentinel.GetComponent<SmartAgent>();
                 sentinelSmartAgent.TargetsList = targets;
-                SimpleAgent sentinelSimpleAgent = sentinel.GetComponent<SimpleAgent>();
-                sentinelSimpleAgent.Path = targetPositions.ToArray();
             }
             List<GameObject> puzzle1 = await LoadAnchorsWithType(result.Value, AnchorType.Puzzle1);
             puzzle1[0].GetComponent<Puzzle>().Clue = "William The Conqueror's mother was but a child of a modest tanner." +
@@ -75,6 +73,7 @@ public class ObjectSpawner : MonoBehaviour
             puzzles.Add(puzzle1[0]);
             
             PuzzleInfoSender.Instance.PuzzlesList = puzzles;
+            GameManager.Instance.PuzzlesList = puzzles;
             PuzzleInfoSender.Instance.SendPuzzlesData();
         }
         else

@@ -30,17 +30,4 @@ public class ServerGameManager : MonoBehaviour
             Destroy(this.gameObject);
         }
     }
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        DataUnreliableSendEvent.AddListener(TestSend);
-        //DataReceiveEvent.AddListener(TestReceive);
-    }
-
-    void TestSend(string data, int client)
-    {
-        Debug.Log($"ServerGameManager Send : {data}");
-        //DataUnreliableSendEvent.Invoke("SendTestToClient", 0);
-    }
 }
