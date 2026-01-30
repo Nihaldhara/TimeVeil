@@ -10,7 +10,12 @@ using UnityEngine.SceneManagement;
 
 public enum AnchorType
 {
-    Puzzle1,
+    Chest,
+    Door,
+    Crown,
+    Throne,
+    Coffin,
+    Flowers,
     Static,
     Sentinel,
     Target

@@ -18,6 +18,7 @@ public class WaitAction : IBTNode
     
     public NodeState Evaluate()
     {
+        Debug.Log($"Delay: start delay {m_StartTime} and current time {m_CurrentTime}");
         m_CurrentTime -= Time.deltaTime;
 
         if (m_CurrentTime <= 0.0f)

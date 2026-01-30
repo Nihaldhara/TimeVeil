@@ -28,10 +28,7 @@ public class MoveAction : IBTNode
 
     public NodeState Evaluate()
     {
-        m_Target = m_Blackboard.Get<GameObject>("CurrentTarget").transform;
-        
-        if (m_Blackboard.Get<bool>(m_KeyName))
-            return NodeState.Failure;
+        m_Target = m_Blackboard.Get<Transform>("CurrentTarget");
         
         if (m_PathFinding.IsTargetReachable(m_Target.position) && m_PathFinding.Target != m_Target)
         {

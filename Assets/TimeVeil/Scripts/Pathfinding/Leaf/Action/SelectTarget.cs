@@ -13,20 +13,29 @@ public class SelectTarget : IBTNode
     {
         m_Blackboard = blackboard;
         m_TargetsList = m_Blackboard.Get<List<Transform>>("TargetsList");
-        m_Index = 1;
+        m_Index = 0;
     }
 
     public NodeState Evaluate()
     {
-        if (m_Index < m_TargetsList.Count - 1)
+        m_Index++;
+        
+        if (m_Index >= m_TargetsList.Count)
         {
-            m_Blackboard.Set("CurrentTarget", m_TargetsList[m_Index]);
+            Debug.Log($"Select Target : Reset Current Index {m_Index} and targetlist count {m_TargetsList.Count}");
             m_Index = 0;
+            m_Blackboard.Set("CurrentTarget", m_TargetsList[m_Index]);
             return NodeState.Success;
         }
-
+        
         m_Blackboard.Set("CurrentTarget", m_TargetsList[m_Index]);
-        m_Index++;
+        
+        Debug.Log($"Select Target : Valid Current Index {m_Index} and targetlist count {m_TargetsList.Count}");
+        
+
+
+        
+
         return NodeState.Success;
     }
 }

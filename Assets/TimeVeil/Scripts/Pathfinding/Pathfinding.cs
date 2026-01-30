@@ -17,7 +17,7 @@ public class Pathfinding : MonoBehaviour
     /// <summary>
     /// Reference to the target to reach.
     /// </summary>
-    private Transform m_Target;
+    [SerializeField]private Transform m_Target;
 
     /// <summary>
     /// Public accessor for Current Target.

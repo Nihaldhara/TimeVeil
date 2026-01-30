@@ -1,0 +1,8 @@
+Model Information:
+* title:	TOWER OF LONDON
+* source:	https://sketchfab.com/3d-models/tower-of-london-6ff05a730cfe429ea25da2d2b6e9905c
+* author:	PeeJaa (https://sketchfab.com/PeeJaa)
+
+Model License:
+* license type:	SKETCHFAB Standard (https://sketchfab.com/licenses)
+* requirements:	Under basic restrictions, use worldwide, on all types of media, commercially or not, and in all types of derivative works

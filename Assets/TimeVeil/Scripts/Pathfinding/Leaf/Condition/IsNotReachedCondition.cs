@@ -17,8 +17,11 @@ public class IsNotReachedCondition : IBTNode
         
     public NodeState Evaluate()
     {
-        if (Vector3.Distance(m_AgentTransform.position, m_TargetTransform.position) < 0.1f)
+        m_TargetTransform = m_Blackboard.Get<Transform>("CurrentTarget");
+        
+        if (Vector3.Distance(m_AgentTransform.position, m_TargetTransform.position) < 0.5f)
         {
+            Debug.Log("IsNotReachedCondition: Target reached, moving on to next target");
             return NodeState.Success;
         }
 

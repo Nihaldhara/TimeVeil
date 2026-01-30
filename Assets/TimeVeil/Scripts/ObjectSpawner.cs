@@ -52,29 +52,42 @@ public class ObjectSpawner : MonoBehaviour
 
             List<GameObject> puzzles = new List<GameObject>();
             List<GameObject> statics = await LoadAnchorsWithType(result.Value, AnchorType.Static);
+            List<GameObject> chest = await LoadAnchorsWithType(result.Value, AnchorType.Chest);
+            List<GameObject> crown = await LoadAnchorsWithType(result.Value, AnchorType.Crown);
+            List<GameObject> bouquet = await LoadAnchorsWithType(result.Value, AnchorType.Flowers);
             List<GameObject> targets = await LoadAnchorsWithType(result.Value, AnchorType.Target);
-            List<Vector3> targetPositions = new List<Vector3>();
+            List<Transform> targetTransform = new List<Transform>();
             foreach (var target in targets)
             {
-                targetPositions.Add(target.transform.position);
+                targetTransform.Add(target.transform);
             }
+            List<GameObject> puzzle1 = await LoadAnchorsWithType(result.Value, AnchorType.Door);
+            puzzle1[0].GetComponent<Puzzle>().Clue = "William The Conqueror's mother was but a child of a modest tanner." +
+                                                     "The young king was given birth to here, among the tools and works of his grandfather, between 1027 and 1028." +
+                                                     "You could say that is where the KEY to Normandy's glory came to life...";
+            puzzles.Add(puzzle1[0]);
+            List<GameObject> puzzle2 = await LoadAnchorsWithType(result.Value, AnchorType.Throne);
+            puzzle1[0].GetComponent<Puzzle>().Clue = "William The Conqueror's mother was but a child of a modest tanner." +
+                                                     "The young king was given birth to here, among the tools and works of his grandfather" +
+                                                     "You could say that is where the KEY to Normandy's glory came to life...";
+            puzzles.Add(puzzle2[0]);
+            List<GameObject> puzzle3 = await LoadAnchorsWithType(result.Value, AnchorType.Coffin);
+            puzzle1[0].GetComponent<Puzzle>().Clue = "William The Conqueror's mother was but a child of a modest tanner." +
+                                                     "The young king was given birth to here, among the tools and works of his grandfather." +
+                                                     "You could say that is where the KEY to Normandy's glory came to life...";
+            puzzles.Add(puzzle3[0]);
+
+            PuzzleInfoSender.Instance.PuzzlesList = puzzles;
+            GameManager.Instance.PuzzlesList = puzzles;
+            PuzzleInfoSender.Instance.SendPuzzlesData();
             List<GameObject> sentinels = await LoadAnchorsWithType(result.Value, AnchorType.Sentinel);
             foreach (var sentinel in sentinels)
             {
                 Pathfinding sentinelPathfinding = sentinel.GetComponent<Pathfinding>();
                 sentinelPathfinding.Grid = m_PathGrid;
                 SmartAgent sentinelSmartAgent = sentinel.GetComponent<SmartAgent>();
-                sentinelSmartAgent.TargetsList = targets;
+                sentinelSmartAgent.TargetsList = targetTransform;
             }
-            List<GameObject> puzzle1 = await LoadAnchorsWithType(result.Value, AnchorType.Puzzle1);
-            puzzle1[0].GetComponent<Puzzle>().Clue = "William The Conqueror's mother was but a child of a modest tanner." +
-                                                     "The young king was given birth to here, among the tools and works of his grandfather." +
-                                                     "You could say that is where the KEY to Normandy's glory came to life...";
-            puzzles.Add(puzzle1[0]);
-            
-            PuzzleInfoSender.Instance.PuzzlesList = puzzles;
-            GameManager.Instance.PuzzlesList = puzzles;
-            PuzzleInfoSender.Instance.SendPuzzlesData();
         }
         else
         {
@@ -99,6 +112,11 @@ public class ObjectSpawner : MonoBehaviour
             {
                 if (success)
                 {
+                    Debug.Log($"ObjectType {objectType} and typesList {m_typesList.Count}");
+                    
+                    if (objectType > m_typesList.Count - 1)
+                        return;
+                    
                     GameObject gameObjectType = m_typesList[objectType];
                     var spatialAnchor = new GameObject($"Anchor {unboundAnchor.Uuid}")
                         .AddComponent<OVRSpatialAnchor>();

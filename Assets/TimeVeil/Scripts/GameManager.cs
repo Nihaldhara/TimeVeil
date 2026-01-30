@@ -46,8 +46,7 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private List<GameObject> m_PuzzlesList;
-
+    private List<GameObject> m_PuzzlesList = new List<GameObject>();
     public List<GameObject> PuzzlesList
     {
         get => m_PuzzlesList;
@@ -91,6 +90,11 @@ public class GameManager : MonoBehaviour
             int solvedCount = 0;
             for (int i = 0; i < m_PuzzlesList.Count; i++)
             {
+                
+                // Temporary fix
+                if (m_PuzzlesList[i].GetComponent<Puzzle>())
+                    break;
+                
                 if (!m_PuzzlesList[i].GetComponent<Puzzle>().Solved)
                     break;
                 solvedCount++;
@@ -100,9 +104,7 @@ public class GameManager : MonoBehaviour
     
             m_CurrentGameState = solvedCount switch
             {
-                5 => GameState.Succeeded,
-                4 => GameState.Stage4,
-                3 => GameState.Stage3,
+                3 => GameState.Succeeded,
                 2 => GameState.Stage2,
                 1 => GameState.Stage1,
                 _ => m_CurrentGameState
