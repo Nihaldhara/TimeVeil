@@ -56,62 +56,62 @@ public class SecureClient : MonoBehaviour
     {
         m_ClientGameManager = ClientGameManager.Instance;
 
-        m_ClientGameManager.DataUnreliableSendEvent.AddListener(DataSendUnReliable);
+            m_ClientGameManager.DataUnreliableSendEvent.AddListener(DataSendUnReliable);
 
-        m_ClientGameManager.DataReliableSendEvent.AddListener(DataSendReliable);
-        
-        var settings = new NetworkSettings();
-        settings.WithNetworkConfigParameters(maxMessageSize: 1472);
+            m_ClientGameManager.DataReliableSendEvent.AddListener(DataSendReliable);
 
-        settings.WithSimulatorStageParameters(
-            maxPacketCount: m_MaxPacketCount,
-            mode: m_mode,
-            packetDelayMs: m_MaxPacketDelay,
-            packetJitterMs: m_MaxJitterMs,
-            packetDropPercentage: m_MaxDropPercentage,
-            packetDropInterval: m_MaxPacketInterval);
+            var settings = new NetworkSettings();
+            settings.WithNetworkConfigParameters(maxMessageSize: 1472);
 
-
-        if (useEncryption)
-        {
-            // Client only needs the public cert to verify the server identity
-            settings.WithSecureClientParameters(certificatePem, serverCommonName);
-        }
-
-        m_Driver = NetworkDriver.Create(settings);
-
-        // --- 3. PIPELINE DEFINITION ---
-
-        // Reliable + Fragmented: For large and ensure data.
-
-        var ReliableFragmentedStages = new System.Collections.Generic.List<System.Type>
-        {
-            typeof(FragmentationPipelineStage),
-            typeof(ReliableSequencedPipelineStage)
-        };
-
-        if (m_UseNetworkSimulator)
-            ReliableFragmentedStages.Add(typeof(SimulatorPipelineStage));
-
-        m_ReliableFragmentedPipeline = m_Driver.CreatePipeline(ReliableFragmentedStages.ToArray());
+            settings.WithSimulatorStageParameters(
+                maxPacketCount: m_MaxPacketCount,
+                mode: m_mode,
+                packetDelayMs: m_MaxPacketDelay,
+                packetJitterMs: m_MaxJitterMs,
+                packetDropPercentage: m_MaxDropPercentage,
+                packetDropInterval: m_MaxPacketInterval);
 
 
-        // Unreliable: For fast data, No fragmentation.
+            if (useEncryption)
+            {
+                // Client only needs the public cert to verify the server identity
+                settings.WithSecureClientParameters(certificatePem, serverCommonName);
+            }
 
-        var UnReliablePipelineStages = new System.Collections.Generic.List<System.Type>
-        {
-            typeof(UnreliableSequencedPipelineStage),
-            typeof(SimulatorPipelineStage)
-        };
+            m_Driver = NetworkDriver.Create(settings);
 
-        if (m_UseNetworkSimulator)
-            UnReliablePipelineStages.Add(typeof(SimulatorPipelineStage));
+            // --- 3. PIPELINE DEFINITION ---
 
-        m_UnReliablePipeline = m_Driver.CreatePipeline(UnReliablePipelineStages.ToArray());
+            // Reliable + Fragmented: For large and ensure data.
 
-        endpoint = NetworkEndpoint.Parse(serverIP, port);
+            var ReliableFragmentedStages = new System.Collections.Generic.List<System.Type>
+            {
+                typeof(FragmentationPipelineStage),
+                typeof(ReliableSequencedPipelineStage)
+            };
 
-        Debug.Log("Client: Attempting to connect to " + serverIP);
+            if (m_UseNetworkSimulator)
+                ReliableFragmentedStages.Add(typeof(SimulatorPipelineStage));
+
+            m_ReliableFragmentedPipeline = m_Driver.CreatePipeline(ReliableFragmentedStages.ToArray());
+
+
+            // Unreliable: For fast data, No fragmentation.
+
+            var UnReliablePipelineStages = new System.Collections.Generic.List<System.Type>
+            {
+                typeof(UnreliableSequencedPipelineStage),
+                typeof(SimulatorPipelineStage)
+            };
+
+            if (m_UseNetworkSimulator)
+                UnReliablePipelineStages.Add(typeof(SimulatorPipelineStage));
+
+            m_UnReliablePipeline = m_Driver.CreatePipeline(UnReliablePipelineStages.ToArray());
+            
+            endpoint = NetworkEndpoint.Parse(serverIP, port);
+            
+            Debug.Log("Client: Attempting to connect to " + serverIP);
     }
 
     void OnDestroy()
@@ -134,7 +134,7 @@ public class SecureClient : MonoBehaviour
 
         DataStreamReader stream;
         NetworkEvent.Type cmd;
-        while ((cmd = m_Driver.PopEventForConnection(m_Connection, out stream)) != NetworkEvent.Type.Empty)
+        if ((cmd = m_Driver.PopEventForConnection(m_Connection, out stream)) != NetworkEvent.Type.Empty)
         {
             if (cmd == NetworkEvent.Type.Connect)
             {

@@ -272,7 +272,7 @@ public class SecureServer : MonoBehaviour
     /// </summary>
     public void DataSendUnReliable(string data, int client)
     {
-        if (m_Driver.BeginSend(m_UnReliablePipeline, m_Connections[client], out var writer) == 0)
+        while (m_Driver.BeginSend(m_UnReliablePipeline, m_Connections[client], out var writer) == 0)
         {
             // Convert String in UTF8
             var bytes = System.Text.Encoding.UTF8.GetBytes(data);

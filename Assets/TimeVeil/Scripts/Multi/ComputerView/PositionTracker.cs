@@ -4,18 +4,29 @@ using UnityEngine;
 
 public class PositionTracker : MonoBehaviour
 {
+    private GameManager m_GameManager;
+    
     private float timer = 0f;
     private float sendInterval = 0.1f;
 
     private void Update()
     {
-        timer += Time.deltaTime;
-    
-        if (timer >= sendInterval)
+        if (m_GameManager.m_CurrentGameState != GameState.Waiting)
         {
-            timer = 0f;
-            SendPlayerPosition();
+            timer += Time.deltaTime;
+        
+            if (timer >= sendInterval)
+            {
+                timer = 0f;
+                SendPlayerPosition();
+            }
         }
+        
+    }
+
+    private void Awake()
+    {
+        m_GameManager = GameManager.Instance;
     }
 
     void SendPlayerPosition()

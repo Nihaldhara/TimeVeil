@@ -63,6 +63,7 @@ public class ComputerGameManager : MonoBehaviour
     {
         m_RemainingTime = m_TotalTime;
         m_ClientGameManager = ClientGameManager.Instance;
+        m_CurrentGameState = GameState.Waiting;
         
         m_ClientGameManager.SentinelPositionReceiveEvent.AddListener(PlaceSentinel);
         m_ClientGameManager.PlayerPositionReceiveEvent.AddListener(PlacePlayer);
@@ -73,17 +74,20 @@ public class ComputerGameManager : MonoBehaviour
 
     private void Update()
     {
-        m_RemainingTime -= Time.deltaTime;
-        
-        float minutes = Mathf.Floor(m_RemainingTime / 60);
-        float seconds = m_RemainingTime % 60;
-        string niceTime = string.Format("{0:0}:{1:00}", minutes, seconds);
-
-        m_TimerDisplay.text = niceTime;
-        
-        if (m_RemainingTime <= 0.0f)
+        if (m_CurrentGameState != GameState.Succeeded || m_CurrentGameState != GameState.Failed || m_CurrentGameState != GameState.Waiting)
         {
-            TimerEnded();
+            m_RemainingTime -= Time.deltaTime;
+            
+            float minutes = Mathf.Floor(m_RemainingTime / 60);
+            float seconds = m_RemainingTime % 60;
+            string niceTime = string.Format("{0:0}:{1:00}", minutes, seconds);
+
+            m_TimerDisplay.text = niceTime;
+            
+            if (m_RemainingTime <= 0.0f)
+            {
+                TimerEnded();
+            }
         }
     }
 

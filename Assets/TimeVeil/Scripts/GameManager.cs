@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
@@ -8,6 +9,8 @@ public class GameManager : MonoBehaviour
 {
     [SerializeField] private float m_TotalTime = 60.0f;
     private float m_RemainingTime;
+
+    [SerializeField] private TMP_Text wonText;
 
     private ServerGameManager m_ServerGameManager;
     
@@ -33,7 +36,7 @@ public class GameManager : MonoBehaviour
     }
     
     private GameState _currentGameState;
-    private GameState m_CurrentGameState
+    public GameState m_CurrentGameState
     {
         get => _currentGameState;
         set
@@ -66,6 +69,7 @@ public class GameManager : MonoBehaviour
         
         m_ServerGameManager = ServerGameManager.Instance;
         m_CurrentGameState = GameState.Started;
+        wonText.gameObject.SetActive(false);
         
         m_ServerGameManager.ClientConnectionEvent.AddListener(OnClientConnected);
     }
@@ -85,30 +89,37 @@ public class GameManager : MonoBehaviour
         }
         else
         {
-            m_RemainingTime -= Time.deltaTime;
-            
-            int solvedCount = 0;
-            for (int i = 0; i < m_PuzzlesList.Count; i++)
+            if (m_CurrentGameState == GameState.Succeeded)
             {
-                
-                // Temporary fix
-                if (m_PuzzlesList[i].GetComponent<Puzzle>())
-                    break;
-                
-                if (!m_PuzzlesList[i].GetComponent<Puzzle>().Solved)
-                    break;
-                solvedCount++;
-                Debug.Log("GameManager: A puzzle has been solved, now there are " + solvedCount);
-                checkFirstPuzzleState = true;
+                wonText.gameObject.SetActive(true);
             }
-    
-            m_CurrentGameState = solvedCount switch
+            else
             {
-                3 => GameState.Succeeded,
-                2 => GameState.Stage2,
-                1 => GameState.Stage1,
-                _ => m_CurrentGameState
-            };
+                m_RemainingTime -= Time.deltaTime;
+            
+                int solvedCount = 0;
+                for (int i = 0; i < m_PuzzlesList.Count; i++)
+                {
+                
+                    // Temporary fix
+                    if (m_PuzzlesList[i].GetComponent<Puzzle>())
+                        break;
+                
+                    if (!m_PuzzlesList[i].GetComponent<Puzzle>().Solved)
+                        break;
+                    solvedCount++;
+                    Debug.Log("GameManager: A puzzle has been solved, now there are " + solvedCount);
+                    checkFirstPuzzleState = true;
+                }
+    
+                m_CurrentGameState = solvedCount switch
+                {
+                    3 => GameState.Succeeded,
+                    2 => GameState.Stage2,
+                    1 => GameState.Stage1,
+                    _ => m_CurrentGameState
+                };
+            }
         }
     }
     

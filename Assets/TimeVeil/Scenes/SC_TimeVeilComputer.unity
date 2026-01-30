@@ -210,7 +210,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 096d1097fca9c3e4f87d006ee7462f2e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::RoomCreation
-  wallPrefab: {fileID: 8171404075219008756, guid: 2d2c450f99b2d404d9aeaeeae9ae33df, type: 3}
 --- !u!4 &474381257
 Transform:
   m_ObjectHideFlags: 0
@@ -368,7 +367,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SecureClient
   m_EnableDebug: 1
-  serverIP: 10.105.0.3
+  serverIP: 10.105.251.245
   port: 12000
   m_UseNetworkSimulator: 0
   m_MaxPacketCount: 0
@@ -709,7 +708,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cc28a65d555c5964c8184292be63fa9a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerPositioning
-  playerTransform: {fileID: 1905828053}
 --- !u!4 &999718336
 Transform:
   m_ObjectHideFlags: 0
@@ -754,7 +752,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 92ba3b30409362c428f79ce3d540068a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SentinelPositioning
-  sentinelTransform: {fileID: 1688133894}
 --- !u!4 &1182891335
 Transform:
   m_ObjectHideFlags: 0
@@ -799,8 +796,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b74f9e283f514e34f99e9748e7b671ba, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PuzzleInfoReceiver
-  puzzlePrefab: {fileID: 3599474010799949558, guid: 34a020be6c7b04348ba487b09a85af2a, type: 3}
-  clueText: {fileID: 1664046511}
 --- !u!4 &1207351412
 Transform:
   m_ObjectHideFlags: 0
